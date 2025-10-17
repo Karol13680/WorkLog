@@ -1,0 +1,26 @@
+@mixin dynamic-size($width, $height) {
+  width: $width;
+  height: $height;
+}
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin placeholder-style($color: var(--main-brown), $opacity: 1) {
+  &::placeholder {
+    color: $color;
+    opacity: $opacity;
+    transition: opacity 0.2s ease;
+  }
+
+  &:focus::placeholder {
+    opacity: 0;
+  }
+}
+
+@mixin transition-basic($property: all, $time: 0.15s, $ease: ease-in-out) {
+  transition: $property $time $ease;
+}
