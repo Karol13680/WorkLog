@@ -1,2 +1,59 @@
-# Created by venv; see https://docs.python.org/3/library/venv.html
-*
+# Pliki kompilowane Pythona
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Środowisko wirtualne (venv)
+venv/
+ENV/
+env/
+.venv/
+Lib/
+Include/
+Scripts/
+pyvenv.cfg
+
+# Cache i logi
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+instance/
+.webassets-cache
+celerybeat-schedule
+
+# Flask / IDE / system
+*.swp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.code-workspace
+
+# Pliki konfiguracyjne lokalne
+.env
+.env.*
+*.local
+config.py
+
+# === Node / frontend (jeśli masz część React/Vite) ===
+node_modules/
+dist/
+build/
+*.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Testy ===
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
