@@ -1,0 +1,31 @@
+.default-btn {
+    @include flex-center;
+    flex-shrink: 0;
+    background-color: var(--main-blue);
+    border-radius: 4px;
+    padding: 0 8px;
+    border: none;
+    color: var(--bright-sandy);
+    transition: 0.15s ease-in-out;
+
+    &:hover {
+        cursor: pointer;
+        background-color: var(--main-blue);
+    }
+
+    &--small {
+        @include dynamic-size(80px, 30px);
+    }
+
+    &--medium {
+        @include dynamic-size(114px, 35px);
+    }
+
+    &--large {
+        @include dynamic-size(100%, 42px);
+    }
+
+    &--custom {
+        @include custom-btn-size(16px);
+    }
+}

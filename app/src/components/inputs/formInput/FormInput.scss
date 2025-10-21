@@ -1,0 +1,32 @@
+.form-label {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 16px;
+    font-size: 1.2rem;
+    color: var(--main-gray);
+
+    &__input {
+        height: 40px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid var(--main-gray);
+        background: var(--main-white);
+        outline: none;
+        letter-spacing: 1px;
+        font-size: 1rem;
+        
+        @media (max-width: 768px) {
+            height: 40px;
+            padding: 0 12px;
+            font-size: 1.2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        gap: 12px;
+        font-size: 1.1rem;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}

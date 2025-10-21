@@ -9,6 +9,11 @@
   align-items: center;
 }
 
+@mixin custom-btn-size($padding) {
+  padding: $padding;
+  max-width: 200px;
+}
+
 @mixin placeholder-style($color: var(--main-brown), $opacity: 1) {
   &::placeholder {
     color: $color;

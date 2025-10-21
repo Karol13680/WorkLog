@@ -1,0 +1,17 @@
+.access-background {
+    width: 50%;
+    height: 100%;
+    object-fit: cover;
+    overflow: hidden;
+
+    &__img {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+@media only screen and (max-width: 1366px) {
+    .access-background {
+        display: none;
+    }
+}

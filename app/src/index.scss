@@ -9,15 +9,16 @@
 }
 
 :root {
-  --main-black: #1e1e1e;
-  --dark-black: #121212;
-  --main-white: #f8f8f8;
+  --main-blue: #8CB0EB;
+  --gray: #D6E1F0;
+  --main-white: #EEF1F9;
+  --background: #ffffff;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--main-black);
+  background-color: var(--background);
 }
 
 a {
