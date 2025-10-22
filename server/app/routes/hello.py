@@ -26,11 +26,9 @@ def db_status_check():
         current_app.logger.error(f"Błąd bazy danych (SQLAlchemyError): {e}", exc_info=True)
         return jsonify({
             "database_status": "BŁĄD POŁĄCZENIA",
-            "error_details": "Błąd SQL/Baza danych. Szczegóły błędu zostały zarejestrowane w logach serwera."
         }), 500
     except Exception as e:
         current_app.logger.error(f"Nieoczekiwany błąd aplikacji: {e}", exc_info=True)
         return jsonify({
             "database_status": "BŁĄD APLIKACJI",
-            "error_details": "Wystąpił nieoczekiwany błąd serwera."
         }), 500

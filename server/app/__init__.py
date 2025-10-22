@@ -4,17 +4,12 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
-# 1. Ładowanie zmiennych środowiskowych z .env
 load_dotenv()
-
-# Utworzenie instancji SQLAlchemy (db jest widoczne globalnie)
 db = SQLAlchemy() 
 
 def create_app():
-    # WAŻNE: Utworzenie obiektu 'app' MUSI być pierwsze
     app = Flask(__name__, instance_relative_config=False)
     
-    # 2. Ładowanie konfiguracji
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY') or 'bardzo_tajny_klucz_deweloperski',
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL'),
@@ -24,12 +19,10 @@ def create_app():
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
         raise EnvironmentError("BŁĄD: Zmienna środowiskowa DATABASE_URL nie została znaleziona. Sprawdź plik .env.")
 
-    # 3. Inicjalizacja rozszerzeń: db.init_app() jest teraz poprawnie umieszczone
     db.init_app(app)
     CORS(app)
 
     with app.app_context():
-        # 4. Import Modeli: Importujemy całe moduły, co jest najlepszą metodą w tym przypadku.
         from app.models import users as _
         from app.models import jobs as _
         from app.models import priorities as _
@@ -41,10 +34,8 @@ def create_app():
         from app.models import links_type as _
         from app.models import logs as _
         
-        # Tworzenie wszystkich tabel w bazie danych
         db.create_all()
 
-        # 5. Rejestracja ruterów
         from .routes import register_routes
         register_routes(app)
 

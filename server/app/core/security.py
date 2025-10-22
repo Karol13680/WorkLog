@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from flask import current_app
 import jwt
 
-# Konfiguracja haszowania (bcrypt)
+# Konfiguracja haszowania
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 #  HASŁA 
@@ -18,7 +18,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(safe_password, hashed_password)
 
 
-#  TOKENY JWT (do logowania)
+#  TOKENY JWT
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
