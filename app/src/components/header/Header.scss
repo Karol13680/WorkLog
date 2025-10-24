@@ -1,0 +1,148 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e9ecef;
+  position: relative; 
+
+  &__logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 10;
+  }
+
+  &__logo {
+    height: 40px;
+  }
+
+  &__logo-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__logo-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #212529;
+  }
+
+  &__logo-amount {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  &__user-section {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  &__active-task-btn {
+    @include custom-btn-size(0.5rem 1rem);
+    @include transition-basic(background-color, 0.2s);
+
+    background-color: #5b7cfd;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: #4a6ae6;
+    }
+  }
+
+  &__avatar {
+    @include dynamic-size(45px, 45px);
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.header {
+  &__nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2rem; 
+  }
+
+  &__hamburger {
+    display: none; 
+    flex-direction: column;
+    justify-content: space-around;
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
+
+    &:focus {
+      outline: none;
+    }
+
+    span {
+      width: 2rem;
+      height: 0.25rem;
+      background: #333;
+      border-radius: 10px;
+      transition: all 0.3s linear;
+      position: relative;
+      transform-origin: 1px;
+    }
+
+    &.is-active span:nth-child(1) {
+      transform: rotate(45deg);
+    }
+    &.is-active span:nth-child(2) {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    &.is-active span:nth-child(3) {
+      transform: rotate(-45deg);
+    }
+  }
+
+  @media (max-width: 992px) {
+    &__nav-wrapper {
+      display: none; 
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f8f9fa; 
+      padding: 1.5rem;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid #e9ecef;
+
+      &.is-open {
+        display: flex;
+      }
+    }
+
+    &__user-section {
+      flex-direction: column;
+      margin-top: 1.5rem;
+      width: 100%;
+    }
+
+    &__active-task-btn {
+      width: 100%;
+      text-align: center;
+    }
+    
+    &__hamburger {
+      display: flex; 
+    }
+  }
+}

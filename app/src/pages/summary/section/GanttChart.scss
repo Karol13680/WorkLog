@@ -1,0 +1,45 @@
+.gantt-chart-container {
+  background-color: var(--background);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  &__icon {
+    font-size: 1.2rem;
+    color: #6c757d;
+    cursor: pointer;
+  }
+  
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+.gantt-day {
+  width: 100%;
+
+  &__date {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+  
+  &__chart-wrapper {
+    height: 200px;
+  }
+}

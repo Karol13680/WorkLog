@@ -1,0 +1,13 @@
+.info-section {
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+
+  &__tiles {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,25 @@
+.tasks-chart {
+  flex: 1;
+  min-width: 300px;
+  background-color: var(--background);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  &__menu-icon {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.2rem;
+    color: #6c757d;
+    cursor: pointer;
+  }
+
+  &__chart-wrapper {
+    flex-grow: 1;
+    position: relative;
+  }
+}
