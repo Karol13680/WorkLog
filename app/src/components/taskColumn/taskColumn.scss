@@ -1,0 +1,38 @@
+.task-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: var(--gray);
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 300px;
+  flex: 1;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
+  }
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  &__count {
+    font-size: 0.9rem;
+    font-weight: 500;
+    background-color: #e9ecef;
+    color: #6c757d;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+  }
+
+  &__tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}

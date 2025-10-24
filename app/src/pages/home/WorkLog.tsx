@@ -1,11 +1,15 @@
 import './WorkLog.scss';
 
-function WorkLog() {
+import Header from '../../components/header/Header';
+import InfoSection from './section/info/InfoSection';
+import TaskTable from '../../components/taskTable/Tasktable';
+
+const WorkLog = () => {
   return (
     <>
-    <div className="container">
-        <h1>Work Log Page</h1>
-    </div>
+      <Header />
+      <InfoSection />
+      <TaskTable />
     </>
   )
 }
