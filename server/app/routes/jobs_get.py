@@ -1,14 +1,22 @@
 from flask import Blueprint, jsonify
 from app.database import crud
+from app.core.security import get_current_user_id
 
 job_get_bp = Blueprint("job_get", __name__, url_prefix="/jobs")
 
 @job_get_bp.route("/<int:id>", methods=["GET"])
 def get_job(id):
     try:
+        user_id = get_current_user_id()
+        if not user_id:
+            return jsonify({"message": "Brak autoryzacji."}), 401
+
         job = crud.get_job_by_id(id)
         if not job:
             return jsonify({"message": "Projekt o podanym ID nie istnieje."}), 404
+
+        if job.id_user != user_id:
+            return jsonify({"message": "Brak dostępu do tego projektu."}), 403
 
         try:
             links = crud.get_links_by_job(job.id) or []
