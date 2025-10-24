@@ -18,7 +18,7 @@ function Registration() {
           />
         </Link>
         <RegistrationForm />
-        <FormFooter link="/login" title="Zaloguj się" />
+        <FormFooter link="/" title="Zaloguj się" />
       </section>
       <AccessImg />
     </main>

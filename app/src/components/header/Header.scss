@@ -41,9 +41,8 @@
   }
 
   &__active-task-btn {
-    @include custom-btn-size(0.5rem 1rem);
-    @include transition-basic(background-color, 0.2s);
-
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
     background-color: #5b7cfd;
     color: white;
     border: none;
@@ -58,7 +57,8 @@
   }
 
   &__avatar {
-    @include dynamic-size(45px, 45px);
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #fff;
@@ -67,6 +67,53 @@
 }
 
 .header {
+  &__avatar-wrapper {
+    position: relative;
+    cursor: pointer;
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0.75rem 1.25rem; 
+    min-width: 120px;
+    text-align: center; 
+    z-index: 20;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  &__logout-link {
+    color: #dc3545;
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: block;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem; 
+    margin: -0.25rem -0.5rem; 
+    transition: color 0.2s, background-color 0.2s;
+
+    &:hover {
+      color: #b02a37;
+      background-color: #f8f9fa; 
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
   &__nav-wrapper {
     display: flex;
     align-items: center;
