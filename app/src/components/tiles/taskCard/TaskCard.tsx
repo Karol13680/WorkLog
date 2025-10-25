@@ -1,6 +1,6 @@
 import React from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
-import { FaFire, FaCheckCircle, FaHourglassHalf, FaPauseCircle } from 'react-icons/fa';
+import {  FaCheckCircle, FaHourglassHalf, FaPauseCircle } from 'react-icons/fa';
 import './TaskCard.scss';
 
 export interface Task {

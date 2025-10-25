@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
 
 import Header from '../../components/header/Header';
 import ContentContainer from "../../components/contentContainer/ContentContainer";
@@ -26,7 +25,7 @@ const ProjectManagement: React.FC = () => {
   
   const isProjects = activeTab === 'projects';
   const title = isProjects ? "Zarządzanie projektami" : "Zarządzanie zleceniami klientów";
-  const buttonLabel = isProjects ? "Nowy projekt" : "Dodaj klienta";
+  // const buttonLabel = isProjects ? "Nowy projekt" : "Dodaj klienta";
 
   const ActionButton: React.FC = () => (
     <Link to="/add-task" className="action-button">
