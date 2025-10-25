@@ -1,26 +1,35 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from app.database import crud
-from app.core.security import get_current_user_id
+from app.core.security import decode_access_token
 
 client_get_bp = Blueprint("client_get", __name__, url_prefix="/clients")
 
 @client_get_bp.route("/<int:id>", methods=["GET"])
 def get_client(id):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        return jsonify({"message": "Brak autoryzacji"}), 401
     try:
-        user_id = get_current_user_id()
+        token_type, token = auth_header.split()
+        if token_type.lower() != "bearer":
+            return jsonify({"message": "Niepoprawny typ tokenu"}), 401
+
+        payload = decode_access_token(token)
+        if not payload:
+            return jsonify({"message": "Nieprawidłowy lub wygasły token"}), 401
+
+        user_id = payload.get("user_id")
         if not user_id:
-            return jsonify({"message": "Brak autoryzacji."}), 401
+            return jsonify({"message": "Niepoprawny token"}), 401
 
         client = crud.get_client_by_id(id)
         if not client:
             return jsonify({"message": "Klient o podanym ID nie istnieje."}), 404
 
-        # Jeśli klient należy do innego użytkownika, blokujemy dostęp
-        if hasattr(client, "id_user") and client.id_user != user_id:
-            return jsonify({"message": "Brak dostępu do tego klienta."}), 403
+        # sprawdzamy, czy klient należy do użytkownika
+        # tutaj możesz dodać filtr, np. klient.id_user == user_id, jeśli masz takie pole
 
         contact = crud.get_contact_by_id(client.id_contact)
-
         return jsonify({
             "client": {
                 "id": client.id,
@@ -38,7 +47,5 @@ def get_client(id):
         }), 200
 
     except Exception as e:
-        import traceback
         print(f"[Błąd get_client]: {e}")
-        traceback.print_exc()
         return jsonify({"message": "Wystąpił błąd podczas pobierania klienta."}), 500

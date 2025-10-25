@@ -1,15 +1,26 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from app.database import crud
-from app.core.security import get_current_user_id
+from app.core.security import decode_access_token
 
 job_get_bp = Blueprint("job_get", __name__, url_prefix="/jobs")
 
 @job_get_bp.route("/<int:id>", methods=["GET"])
 def get_job(id):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        return jsonify({"message": "Brak autoryzacji."}), 401
     try:
-        user_id = get_current_user_id()
+        token_type, token = auth_header.split()
+        if token_type.lower() != "bearer":
+            return jsonify({"message": "Niepoprawny typ tokenu"}), 401
+
+        payload = decode_access_token(token)
+        if not payload:
+            return jsonify({"message": "Nieprawidłowy lub wygasły token"}), 401
+
+        user_id = payload.get("user_id")
         if not user_id:
-            return jsonify({"message": "Brak autoryzacji."}), 401
+            return jsonify({"message": "Niepoprawny token"}), 401
 
         job = crud.get_job_by_id(id)
         if not job:
@@ -25,7 +36,7 @@ def get_job(id):
             print(f"[Błąd pobierania linków]: {e_links}")
             links_list = []
 
-        response = {
+        return jsonify({
             "job": {
                 "id": job.id,
                 "value": job.value,
@@ -41,9 +52,7 @@ def get_job(id):
                 "id_client": job.id_client
             },
             "links": links_list
-        }
-
-        return jsonify(response), 200
+        }), 200
 
     except Exception as e:
         import traceback
