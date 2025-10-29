@@ -9,6 +9,7 @@ from app.models.status import Status as StatusModel
 from app.models.job_titles import JobTitle as JobTitleModel
 from app.models.priorities import Priority as PriorityModel
 
+
 from app.schemas.user import UserCreate
 from app.core.security import hash_password
 from datetime import datetime
@@ -41,17 +42,19 @@ def create_contact(email=None, phone=None, page=None, address=None):
     db.session.refresh(db_contact)
     return db_contact
 
-def create_client(name, description=None, logo=None, id_contact=None):
-    db_client = ClientModel(
+def create_client(name, description=None, logo=None, id_contact=None, user_id=None):
+    client = ClientModel(
         name=name,
         description=description,
         logo=logo,
-        id_contact=id_contact
+        id_contact=id_contact,
+        user_id=user_id
     )
-    db.session.add(db_client)
+    db.session.add(client)
     db.session.commit()
-    db.session.refresh(db_client)
-    return db_client
+    db.session.refresh(client)
+    return client
+
 
 def get_client_by_id(client_id):
     return ClientModel.query.filter_by(id=client_id).first()
@@ -137,3 +140,6 @@ def get_all_job_titles():
 def get_all_priorities():
     from app.models.priorities import Priority as PriorityModel
     return PriorityModel.query.all()
+
+def get_clients_by_user_id(user_id):
+    return ClientModel.query.filter_by(user_id=user_id).all()

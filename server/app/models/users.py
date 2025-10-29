@@ -11,3 +11,4 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True)
 
     jobs = relationship("Job", back_populates="user")
+    clients = relationship("Client", back_populates="user")
