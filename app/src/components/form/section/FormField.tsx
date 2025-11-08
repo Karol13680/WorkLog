@@ -1,5 +1,5 @@
 import React from 'react';
-import "./FormField.scss"
+import "./FormField.scss";
 
 interface Option {
   value: string | number;
@@ -9,28 +9,81 @@ interface Option {
 interface FormFieldProps {
   label: string;
   name: string;
-  type?: 'text' | 'select' | 'textarea' | 'number' | 'date' | 'tel' | 'url' | 'email';
+  type?: 'text' | 'select' | 'textarea' | 'number' | 'date' | 'tel' | 'url' | 'email' | 'file';
   placeholder?: string;
   options?: Option[];
   rows?: number;
+  value?: string | number;
+  onChange?: (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+      | React.ChangeEvent<HTMLSelectElement>
+  ) => void;
 }
 
-const FormField: React.FC<FormFieldProps> = ({ label, type = 'text', name, placeholder, options, rows }) => {
+const FormField: React.FC<FormFieldProps> = ({
+  label,
+  type = 'text',
+  name,
+  placeholder,
+  options,
+  rows,
+  value,
+  onChange,
+}) => {
   const renderInput = () => {
     switch (type) {
       case 'textarea':
-        return <textarea name={name} placeholder={placeholder} rows={rows}></textarea>;
+        return (
+          <textarea
+            id={name}
+            name={name}
+            placeholder={placeholder}
+            rows={rows}
+            value={value as string | undefined}
+            onChange={onChange}
+          />
+        );
+
       case 'select':
         return (
-          <select name={name} defaultValue="">
-            <option value="" disabled>{placeholder}</option>
-            {options?.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
+          <select
+            id={name}
+            name={name}
+            value={value as string | number | undefined}
+            onChange={onChange}
+          >
+            <option value="">{placeholder || 'Wybierz...'}</option>
+            {options?.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
           </select>
         );
+
+      case 'file':
+        return (
+          <input
+            id={name}
+            type="file"
+            name={name}
+            onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
+          />
+        );
+
       default:
-        return <input type={type} name={name} placeholder={placeholder} />;
+        return (
+          <input
+            id={name}
+            type={type}
+            name={name}
+            placeholder={placeholder}
+            value={value as string | number | undefined}
+            onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
+          />
+        );
     }
   };
 

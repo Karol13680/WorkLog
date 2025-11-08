@@ -66,3 +66,4 @@ def update_client(id):
         db.session.rollback()
         print(f"[Błąd update_client]: {e}")
         return jsonify({"message": "Wystąpił błąd podczas aktualizacji klienta."}), 500
+

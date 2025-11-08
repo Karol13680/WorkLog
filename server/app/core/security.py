@@ -17,12 +17,12 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    secret_key = current_app.config.get("SECRET_KEY", "tymczasowy_klucz_dev")
+    secret_key = current_app.config.get("SECRET_KEY", "dev_secret_key")
     encoded_jwt = jwt.encode(to_encode, secret_key, algorithm="HS256")
     return encoded_jwt
 
 def decode_access_token(token: str):
-    secret_key = current_app.config.get("SECRET_KEY", "tymczasowy_klucz_dev")
+    secret_key = current_app.config.get("SECRET_KEY", "dev_secret_key")
     try:
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         return payload

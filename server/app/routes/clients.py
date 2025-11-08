@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from app import db
 from app.database import crud
+from app.core.security import get_current_user_id
 import os
 
 client_bp = Blueprint("clients", __name__, url_prefix="/clients")
@@ -9,9 +10,14 @@ client_bp = Blueprint("clients", __name__, url_prefix="/clients")
 
 @client_bp.route("/add", methods=["POST"])
 def add_client():
-    """Dodaje nowego klienta wraz z kontaktem i logiem."""
+    """Dodaje nowego klienta wraz z kontaktem i logiem oraz przypisuje go do zalogowanego użytkownika."""
 
     try:
+        # Pobranie user_id z tokena
+        user_id = get_current_user_id()
+        if not user_id:
+            return jsonify({"message": "Brak autoryzacji"}), 401
+
         # Pobieranie pól tekstowych z formularza
         name = request.form.get("name")
         description = request.form.get("description")
@@ -53,7 +59,8 @@ def add_client():
             name=name,
             description=description,
             logo=logo_path,
-            id_contact=contact.id
+            id_contact=contact.id,
+            user_id=user_id
         )
 
         # Sukces
@@ -64,7 +71,8 @@ def add_client():
                 "name": client.name,
                 "description": client.description,
                 "logo": client.logo,
-                "id_contact": client.id_contact
+                "id_contact": client.id_contact,
+                "user_id": client.user_id
             },
             "contact": {
                 "email": contact.email,

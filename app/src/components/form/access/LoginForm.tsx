@@ -11,7 +11,7 @@ const loginForm = [
 ];
 
 const LoginForm = () => {
-  const { login } = useAuth(); // 👈 pobieramy funkcję logowania z kontekstu
+  const { login } = useAuth(); 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
