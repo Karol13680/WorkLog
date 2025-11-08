@@ -61,3 +61,4 @@ def update_job(id):
         db.session.rollback()
         print(f"[Błąd update_job]: {e}")
         return jsonify({"message": "Wystąpił błąd podczas aktualizacji projektu."}), 500
+

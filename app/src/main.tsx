@@ -10,6 +10,8 @@ import Stoper from "./pages/stoper/Stoper.tsx";
 import ProjectManagement from "./pages/ProjectManagement/ProjectManagement.tsx";
 import Summary from "./pages/summary/Summary.tsx";
 import AddTask from "./pages/addTask/AddTask.tsx";
+import EditTask from "./pages/editTask/EditTask.tsx";
+import EditClient from "./pages/editClient/EditClient.tsx";
 
 import { AuthProvider } from "./context/AuthContext.tsx";
 import ProtectedRoute from "./routes/ProtectedRoute.tsx";
@@ -73,6 +75,22 @@ createRoot(document.getElementById("root")!).render(
             element={
               <ProtectedRoute>
                 <AddTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-task/:id"
+            element={
+              <ProtectedRoute>
+                <EditTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-client/:id"
+            element={
+              <ProtectedRoute>
+                <EditClient />
               </ProtectedRoute>
             }
           />

@@ -21,7 +21,14 @@ def create_app():
         raise EnvironmentError("BŁĄD: Zmienna środowiskowa DATABASE_URL nie została znaleziona. Sprawdź plik .env.")
 
     db.init_app(app)
-    CORS(app)
+
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:5173"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"]
+    )
 
     migrate = Migrate(app, db)
 
