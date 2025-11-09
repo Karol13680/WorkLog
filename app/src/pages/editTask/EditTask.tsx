@@ -275,11 +275,52 @@ const EditTask: React.FC = () => {
             >
               Anuluj
             </button>
-            <button type="submit" className="button button--primary" disabled={loading}>
+
+            <button
+              type="submit"
+              className="button button--primary"
+              disabled={loading}
+            >
               {loading ? "Zapisywanie..." : "Zapisz zmiany"}
             </button>
-          </div>
 
+            <button
+              type="button"
+              className="button button--danger"
+              disabled={loading}
+              onClick={async () => {
+                if (!window.confirm("Czy na pewno chcesz usunąć ten projekt?")) return;
+
+                setLoading(true);
+                setMessage(null);
+
+                try {
+                  const token = localStorage.getItem("access_token") || "";
+                  const res = await fetch(`http://localhost:5000/jobs/delete/${id}`, {
+                    method: "DELETE",
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                  });
+
+                  const result = await res.json();
+                  console.log("📬 Odpowiedź z API (delete):", result);
+
+                  if (res.ok) {
+                    setMessage("✅ Projekt został usunięty pomyślnie!");
+                    setTimeout(() => window.history.back(), 1000);
+                  } else {
+                    setMessage(`❌ Błąd: ${result.message || "Nie udało się usunąć projektu."}`);
+                  }
+                } catch (err) {
+                  console.error("💥 Błąd podczas usuwania projektu:", err);
+                  setMessage("Wystąpił błąd sieci lub serwera.");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Usuń projekt
+            </button>
+          </div>
           {message && <p className="form-message">{message}</p>}
         </form>
       </ContentContainer>

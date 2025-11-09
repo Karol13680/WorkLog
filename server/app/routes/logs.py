@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.database import crud
 from datetime import datetime
+from app.database.crud import get_job_by_id
 
 logs_bp = Blueprint("logs", __name__, url_prefix="/logs")
 
@@ -97,3 +98,37 @@ def get_all_logs():
     except Exception as e:
         print(f"[Błąd get_all_logs]: {e}")
         return jsonify({"message": "Wystąpił błąd podczas pobierania wszystkich logów."}), 500
+
+
+@logs_bp.route("/manual", methods=["POST"])
+def add_manual_log():
+    try:
+        data = request.get_json()
+        required_fields = ["id_job", "start", "stop"]
+        if not all(field in data for field in required_fields):
+            return jsonify({"message": "Brakuje wymaganych pól: id_job, start, stop."}), 400
+
+        if not get_job_by_id(data["id_job"]):
+            return jsonify({"message": "Projekt o podanym ID nie istnieje."}), 404
+
+        try:
+            start_time = datetime.fromisoformat(data["start"])
+            stop_time = datetime.fromisoformat(data["stop"])
+        except ValueError:
+            return jsonify({"message": "Niepoprawny format daty. Oczekiwano formatu ISO."}), 400
+        
+        if stop_time <= start_time:
+            return jsonify({"message": "Czas zakończenia musi być późniejszy niż rozpoczęcia."}), 400
+
+        log = crud.create_log(
+            id_job=data["id_job"],
+            start=start_time,
+            stop=stop_time
+        )
+        
+        return jsonify({"message": "Log dodany ręcznie.", "id": log.id}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Błąd add_manual_log]: {e}")
+        return jsonify({"message": "Wystąpił błąd podczas dodawania logu."}), 500

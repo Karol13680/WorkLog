@@ -7,6 +7,7 @@
   border-radius: 8px;
   border: 1px solid #e9ecef;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  position: relative; // potrzebne do dropdown
 
   &__icon {
     font-size: 1.5rem;
@@ -60,5 +61,28 @@
   &__menu {
     color: #adb5bd;
     cursor: pointer;
+    position: relative;
+
+    .task-card__menu-dropdown {
+      position: absolute;
+      top: 24px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      min-width: 140px;
+      z-index: 10;
+
+      .task-card__menu-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+          background: #f0f0f0;
+        }
+      }
+    }
   }
 }

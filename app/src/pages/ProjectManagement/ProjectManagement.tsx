@@ -39,10 +39,13 @@ const ProjectManagement: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // ✅ Filtrowanie i wyszukiwarka
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClient, setSelectedClient] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+
   const isProjects = activeTab === "projects";
-  const title = isProjects
-    ? "Zarządzanie projektami"
-    : "Zarządzanie klientami";
+  const title = isProjects ? "Zarządzanie projektami" : "Zarządzanie klientami";
 
   const ActionButton: React.FC = () => (
     <Link to="/add-task" className="action-button">
@@ -122,6 +125,19 @@ const ProjectManagement: React.FC = () => {
     }
   }, [isProjects]);
 
+  // ✅ Filtrowanie projektów
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesClient = selectedClient ? p.client === selectedClient : true;
+    const matchesStatus = selectedStatus ? p.status === selectedStatus : true;
+    return matchesSearch && matchesClient && matchesStatus;
+  });
+
+  // ✅ Filtrowanie klientów
+  const filteredClients = clients.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <Header />
@@ -144,14 +160,27 @@ const ProjectManagement: React.FC = () => {
             </button>
           </>
         }
-        filters={isProjects ? <ProjectFilters /> : <ClientFilters />}
+        filters={
+          isProjects ? (
+            <ProjectFilters
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedClient={selectedClient}
+              setSelectedClient={setSelectedClient}
+              selectedStatus={selectedStatus}
+              setSelectedStatus={setSelectedStatus}
+            />
+          ) : (
+            <ClientFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+          )
+        }
       >
         <div className="projects-grid">
           {loading ? (
             <p>Ładowanie...</p>
           ) : isProjects ? (
-            projects.length > 0 ? (
-              projects.map((project) => (
+            filteredProjects.length > 0 ? (
+              filteredProjects.map((project) => (
                 <Link
                   key={project.id}
                   to={`/edit-task/${project.id}`}
@@ -162,10 +191,10 @@ const ProjectManagement: React.FC = () => {
                 </Link>
               ))
             ) : (
-              <p>Brak projektów przypisanych do użytkownika.</p>
+              <p>Brak projektów spełniających kryteria.</p>
             )
-          ) : clients.length > 0 ? (
-            clients.map((client) => (
+          ) : filteredClients.length > 0 ? (
+            filteredClients.map((client) => (
               <Link
                 key={client.id}
                 to={`/edit-client/${client.id}`}
@@ -182,7 +211,7 @@ const ProjectManagement: React.FC = () => {
               </Link>
             ))
           ) : (
-            <p>Brak klientów przypisanych do użytkownika.</p>
+            <p>Brak klientów spełniających kryteria.</p>
           )}
         </div>
       </ContentContainer>
