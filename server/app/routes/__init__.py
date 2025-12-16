@@ -13,7 +13,8 @@ from .logs import logs_bp
 from .statuses_all import statuses_bp
 from .job_titles_all import job_titles_bp
 from .priorities_all import priorities_bp
-
+from .stats import stats_bp  
+from .gantt import gantt_bp  
 
 def register_routes(app):
     app.register_blueprint(main_bp)
@@ -31,3 +32,5 @@ def register_routes(app):
     app.register_blueprint(statuses_bp)
     app.register_blueprint(job_titles_bp)
     app.register_blueprint(priorities_bp)
+    app.register_blueprint(stats_bp)
+    app.register_blueprint(gantt_bp)

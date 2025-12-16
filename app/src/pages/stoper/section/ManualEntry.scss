@@ -16,10 +16,34 @@
       font-weight: 500;
     }
 
-    input {
-      padding: 0.75rem;
+    input,
+    select {
+      padding: 0.75rem 1rem;
       border: 1px solid #dee2e6;
       border-radius: 8px;
+      font-size: 0.95rem;
+      background-color: #fff;
+      color: #495057;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--main-blue);
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+    }
+
+    select {
+      appearance: none; 
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 0.65rem auto;
+      cursor: pointer;
+
+      &:disabled {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+      }
     }
   }
 
@@ -32,10 +56,29 @@
     .button--secondary {
       background-color: #e9ecef;
       color: #495057;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #dee2e6;
+      }
     }
+
     .button--primary {
       background-color: var(--main-blue);
       color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+
     }
+  }
+
+  &__error {
+    color: #dc3545;
+    font-size: 0.85rem;
   }
 }

@@ -34,7 +34,6 @@ const EditClient: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  // 🔹 Pobranie danych klienta
   useEffect(() => {
     const fetchClient = async () => {
       try {
@@ -77,7 +76,6 @@ const EditClient: React.FC = () => {
     fetchClient();
   }, [id]);
 
-  // 🔹 Obsługa zmian inputów
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -211,7 +209,6 @@ const EditClient: React.FC = () => {
               {formData.logo && <p>Aktualne logo: {formData.logo}</p>}
             </FormSection>
           </div>
-
           <div className="form-actions">
             <button
               type="button"
@@ -220,11 +217,53 @@ const EditClient: React.FC = () => {
             >
               Anuluj
             </button>
-            <button type="submit" className="button button--primary" disabled={loading}>
+
+            <button
+              type="submit"
+              className="button button--primary"
+              disabled={loading}
+            >
               {loading ? "Zapisywanie..." : "Zapisz zmiany"}
             </button>
-          </div>
 
+            <button
+              type="button"
+              className="button button--danger"
+              disabled={loading}
+              onClick={async () => {
+                if (!window.confirm("Czy na pewno chcesz usunąć tego klienta?")) return;
+
+                setLoading(true);
+                setMessage(null);
+
+                try {
+                  const token = localStorage.getItem("access_token") || "";
+                  const res = await fetch(`http://localhost:5000/clients/delete/${id}`, {
+                    method: "DELETE",
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                  });
+
+                  const result = await res.json();
+                  console.log("📬 Odpowiedź z API (delete):", result);
+
+                  if (res.ok) {
+                    setMessage("✅ Klient został usunięty pomyślnie!");
+                    // Przekierowanie użytkownika po usunięciu
+                    setTimeout(() => window.history.back(), 1500);
+                  } else {
+                    setMessage(`❌ Błąd: ${result.message || "Nie udało się usunąć klienta."}`);
+                  }
+                } catch (err) {
+                  console.error("💥 Błąd podczas usuwania klienta:", err);
+                  setMessage("Wystąpił błąd sieci lub serwera.");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              Usuń klienta
+            </button>
+          </div>
           {message && <p className="form-message">{message}</p>}
         </form>
       </ContentContainer>
