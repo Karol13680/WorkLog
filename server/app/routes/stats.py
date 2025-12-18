@@ -39,7 +39,7 @@ def get_dashboard_stats():
             status = crud.get_status_by_id(job.id_status)
             status_name = status.name.lower() if status and status.name else ""
 
-            if status_name == "zakończony":
+            if status_name == "zakończone":
                 completed_projects_count += 1
             else:
                 active_projects_count += 1
