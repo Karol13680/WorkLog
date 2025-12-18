@@ -1,14 +1,15 @@
 import React from 'react';
 import TaskCard from '../tiles/taskCard/TaskCard';
-import type { Task } from '../tiles/taskCard/TaskCard';
+import type { Task, Status } from '../tiles/taskCard/TaskCard';
 import './taskColumn.scss';
 
 interface Props {
   title: string;
   tasks: Task[];
+  onStatusChange: (id: number, newStatus: Status) => void;
 }
 
-const TaskColumn: React.FC<Props> = ({ title, tasks = [] }) => {
+const TaskColumn: React.FC<Props> = ({ title, tasks = [], onStatusChange }) => {
   return (
     <div className="task-column">
       <div className="task-column__header">
@@ -19,7 +20,7 @@ const TaskColumn: React.FC<Props> = ({ title, tasks = [] }) => {
       <div className="task-column__tasks">
         {tasks.map((task) => (
           <div key={task.id} className="task-card__wrapper">
-            <TaskCard task={task} />
+            <TaskCard task={task} onStatusChange={onStatusChange} />
           </div>
         ))}
       </div>

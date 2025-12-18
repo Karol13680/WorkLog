@@ -2,102 +2,115 @@ import React, { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import TaskColumn from '../taskColumn/TaskColumn';
-import type { Task } from '../tiles/taskCard/TaskCard';
+import type { Task, Status } from '../tiles/taskCard/TaskCard';
 import './TaskTable.scss';
 
-const statusMap: Record<string, string> = {
+const statusMap: Record<Status, string> = {
   upcoming: 'Nadchodzące',
   'in-progress': 'Trwające',
   verification: 'Weryfikacja',
   completed: 'Zakończone'
 };
 
-interface TaskWithDelete extends Task {
-  deleteTask?: () => void;
-}
+const statusToId: Record<Status, number> = {
+  upcoming: 1,
+  'in-progress': 2,
+  verification: 3,
+  completed: 4,
+};
 
-type ColumnsState = Record<string, TaskWithDelete[]>;
+type ColumnsState = Record<Status, Task[]>;
 
 const TaskTable: React.FC = () => {
-  const [columns, setColumns] = useState<ColumnsState>({});
+  const [columns, setColumns] = useState<ColumnsState>({
+    upcoming: [],
+    'in-progress': [],
+    verification: [],
+    completed: []
+  });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('access_token') || '';
-        const res = await fetch('/jobs/all-user', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const data = await res.json();
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token') || '';
+      const res = await fetch('/jobs/all-user', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
 
-        if (res.ok) {
-          const tasksByStatus: ColumnsState = Object.keys(statusMap).reduce(
-            (acc, key) => {
-              acc[key] = [];
-              return acc;
-            },
-            {} as ColumnsState
-          );
+      if (res.ok) {
+        const tasksByStatus: ColumnsState = {
+          upcoming: [],
+          'in-progress': [],
+          verification: [],
+          completed: []
+        };
 
-          data.forEach((job: any) => {
-            const statusKey =
-              (Object.keys(statusMap).find(
-                key => statusMap[key] === job.status
-              ) as Task['status']) || 'upcoming';
+        data.forEach((job: any) => {
+          const statusKey = (Object.keys(statusMap).find(
+            key => statusMap[key as Status] === job.status
+          ) as Status) || 'upcoming';
 
-            const task: TaskWithDelete = {
-              id: job.id,
-              title: job.title || 'Brak tytułu',
-              client: job.client || 'Brak klienta',
-              status: statusKey,
-              date: job.date || '',
-              duration: job.duration?.toString() || '',
-              priority: job.priority || 'low',
-              deleteTask: () => handleDelete(job.id, statusKey),
-            };
-
-            if (tasksByStatus[statusKey]) {
-              tasksByStatus[statusKey].push(task);
-            }
+          tasksByStatus[statusKey].push({
+            id: job.id,
+            title: job.title || 'Brak tytułu',
+            client: job.client || 'Brak klienta',
+            status: statusKey,
+            date: job.date || '',
+            duration: job.duration?.toString() || '',
+            priority: job.priority || 'low',
           });
-          setColumns(tasksByStatus);
-        } else {
-          console.error('Błąd pobierania projektów', data.message);
-        }
-      } catch (err) {
-        console.error('Błąd sieci', err);
-      } finally {
-        setLoading(false);
+        });
+        setColumns(tasksByStatus);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchTasks();
   }, []);
 
-  const handleDelete = async (taskId: number, statusKey: string) => {
-    const originalColumns = { ...columns };
-    setColumns(prev => ({
-      ...prev,
-      [statusKey]: prev[statusKey].filter(t => t.id !== taskId),
-    }));
+  const handleStatusUpdate = async (taskId: number, newStatus: Status) => {
+    const token = localStorage.getItem('access_token') || '';
+    const formData = new FormData();
+    formData.append('id_status', statusToId[newStatus].toString());
 
     try {
-      const token = localStorage.getItem('access_token') || '';
-      const res = await fetch(`/jobs/delete/${taskId}`, {
-        method: 'DELETE',
+      const res = await fetch(`/jobs/update/${taskId}`, {
+        method: 'PUT',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        console.error('Błąd usuwania zadania:', data.message);
-        setColumns(originalColumns);
+      if (res.ok) {
+        setColumns(prev => {
+          let movedTask: Task | undefined;
+          const newColumns = { ...prev };
+          
+          for (const key in newColumns) {
+            const statusKey = key as Status;
+            const taskIndex = newColumns[statusKey].findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+              [movedTask] = newColumns[statusKey].splice(taskIndex, 1);
+              break;
+            }
+          }
+
+          if (movedTask) {
+            movedTask.status = newStatus;
+            newColumns[newStatus] = [...newColumns[newStatus], movedTask];
+          }
+
+          return { ...newColumns };
+        });
       }
     } catch (err) {
-      console.error('Błąd sieci przy usuwaniu zadania', err);
-      setColumns(originalColumns);
+      console.error(err);
     }
   };
 
@@ -114,11 +127,12 @@ const TaskTable: React.FC = () => {
         <p>Ładowanie projektów...</p>
       ) : (
         <div className="task-table__board">
-          {Object.entries(statusMap).map(([key, title]) => (
+          {(Object.keys(statusMap) as Status[]).map((key) => (
             <TaskColumn
               key={key}
-              title={title}
-              tasks={columns[key] || []}
+              title={statusMap[key]}
+              tasks={columns[key]}
+              onStatusChange={handleStatusUpdate}
             />
           ))}
         </div>

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { FaFire, FaCheckCircle, FaHourglassHalf, FaPauseCircle, FaEllipsisV } from 'react-icons/fa';
+import { FaCheckCircle, FaHourglassHalf, FaPauseCircle, FaEllipsisV } from 'react-icons/fa';
 import './TaskCard.scss';
 
 export type Status = 'upcoming' | 'in-progress' | 'verification' | 'completed';
 
 export interface Task {
-  id: number | string;
+  id: number;
   title: string;
   client: string;
   status: Status;
@@ -17,7 +17,7 @@ export interface Task {
 
 interface TaskCardProps {
   task: Task;
-  onStatusChange?: (id: number | string, newStatus: Status) => void;
+  onStatusChange: (id: number, newStatus: Status) => void;
 }
 
 const statusConfig = {
@@ -33,41 +33,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
   const currentStatus = statusConfig[task.status];
   const priorityClass = `task-card__priority--${task.priority}`;
 
-  const statusToId: Record<Status, number> = {
-  'upcoming': 1,
-  'in-progress': 2,
-  'verification': 3,
-  'completed': 4,
-};
-
-const handleStatusChange = async (newStatus: Status) => {
-  setShowMenu(false);
-
-  try {
-    const formData = new FormData();
-    formData.append('id_status', statusToId[newStatus].toString());
-
-    const token = localStorage.getItem('access_token') || '';
-
-    const response = await fetch(`/jobs/update/${task.id}`, {
-      method: 'PUT',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Błąd aktualizacji statusu: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Status zaktualizowany:', data);
-    window.location.reload();
-    if (onStatusChange) onStatusChange(task.id, newStatus);
-  } catch (err) {
-    console.error(err);
-  }
-};
-
+  const handleMenuClick = (newStatus: Status) => {
+    setShowMenu(false);
+    onStatusChange(task.id, newStatus);
+  };
 
   return (
     <div className="task-card">
@@ -84,7 +53,6 @@ const handleStatusChange = async (newStatus: Status) => {
         </div>
       </div>
 
-      {/* Przycisk trzy kropki */}
       <div className="task-card__menu">
         <FaEllipsisV onClick={() => setShowMenu(!showMenu)} style={{ cursor: 'pointer' }} />
         {showMenu && (
@@ -93,7 +61,7 @@ const handleStatusChange = async (newStatus: Status) => {
               <div
                 key={statusKey}
                 className="task-card__menu-item"
-                onClick={() => handleStatusChange(statusKey as Status)}
+                onClick={() => handleMenuClick(statusKey as Status)}
               >
                 {statusConfig[statusKey as Status].label}
               </div>
