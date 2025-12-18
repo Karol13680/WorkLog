@@ -64,8 +64,8 @@ const RecentActivities: React.FC = () => {
         };
 
         const [logsResponse, projectsResponse] = await Promise.all([
-          fetch("http://localhost:5000/logs/all", { headers, credentials: "include" }),
-          fetch("http://localhost:5000/jobs/all-user", { headers, credentials: "include" })
+          fetch("/logs/all", { headers, credentials: "include" }),
+          fetch("/jobs/all-user", { headers, credentials: "include" })
         ]);
 
         if (!logsResponse.ok || !projectsResponse.ok) {

@@ -44,7 +44,7 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ selectedProjectId }) => {
       // --- POPRAWKA TUTAJ ---
       const token = localStorage.getItem("access_token"); 
       
-      const response = await fetch("http://localhost:5000/logs/start", {
+      const response = await fetch("/logs/start", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +78,7 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ selectedProjectId }) => {
       // --- POPRAWKA TUTAJ ---
       const token = localStorage.getItem("access_token");
       
-      const response = await fetch(`http://localhost:5000/logs/stop/${currentLogId}`, {
+      const response = await fetch(`/logs/stop/${currentLogId}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`

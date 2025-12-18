@@ -10,13 +10,14 @@
         width: 100%;
 
         a {
-            color: var(--gray);
+            color: var(--main-blue);
+            font-weight: 700;
             @include transition-basic;
         }
 
         a:hover {
             cursor: pointer;
-            color: var(--hover-gray);
+            color: var(--hover-gray) !important;
         }
 
         &--regi {
@@ -29,7 +30,7 @@
         }
 
         &--regi:hover {
-            opacity: 0.8; 
+            color: var(--hover-gray) !important;
         }
     }
 }

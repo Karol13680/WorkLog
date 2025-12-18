@@ -26,7 +26,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
         const token = localStorage.getItem("access_token");
         if (!token) throw new Error("Brak autoryzacji");
 
-        const response = await fetch("http://localhost:5000/jobs/all-user", {
+        const response = await fetch("/jobs/all-user", {
           headers: { "Authorization": `Bearer ${token}` },
           credentials: "include"
         });
@@ -63,7 +63,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
 
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch("http://localhost:5000/logs/manual", {
+      const response = await fetch("/logs/manual", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
