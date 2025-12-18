@@ -1,7 +1,7 @@
 import React from 'react';
 import TaskCard from '../tiles/taskCard/TaskCard';
 import type { Task } from '../tiles/taskCard/TaskCard';
-import './TaskColumn.scss';
+import './taskColumn.scss';
 
 interface Props {
   title: string;
