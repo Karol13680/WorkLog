@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "./Header.scss";
 import Nav from "../nav/Nav";
 import Logo from "../../assets/img/logo.png";
@@ -28,14 +29,14 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header__logo-container">
+        <Link to="/dashboard"> 
         <img src={Logo} alt="WorkLog Logo" className="header__logo" />
+        </Link>
       </div>
 
       <div className={`header__nav-wrapper ${isMenuOpen ? "is-open" : ""}`}>
         <Nav />
         <div className="header__user-section" ref={dropdownRef}>
-          <button className="header__active-task-btn">Aktywne zadanie</button>
-
           {isAuthenticated && (
             <div className="header__avatar-wrapper">
               <img
