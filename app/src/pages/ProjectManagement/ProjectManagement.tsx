@@ -62,7 +62,7 @@ const ProjectManagement: React.FC = () => {
           const token = localStorage.getItem("access_token");
           if (!token) return;
 
-          const response = await fetch("http://localhost:5000/jobs/all-user", {
+          const response = await fetch("/jobs/all-user", {
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
           });
@@ -94,7 +94,7 @@ const ProjectManagement: React.FC = () => {
           const token = localStorage.getItem("access_token");
           if (!token) return;
 
-          const response = await fetch("http://localhost:5000/clients/all-user", {
+          const response = await fetch("/clients/all-user", {
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
           });

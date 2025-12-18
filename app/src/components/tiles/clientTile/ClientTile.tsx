@@ -16,7 +16,7 @@ const ClientTile: React.FC<ClientTileProps> = ({ name, description, email, phone
       {logo && (
         <div className="client-tile__logo">
           <img
-            src={`http://localhost:5000/${logo}`}
+            src={`/${logo}`}
             alt={`${name} logo`}
             className="client-tile__logo-img"
           />

@@ -49,7 +49,7 @@ const handleStatusChange = async (newStatus: Status) => {
 
     const token = localStorage.getItem('access_token') || '';
 
-    const response = await fetch(`http://localhost:5000/jobs/update/${task.id}`, {
+    const response = await fetch(`/jobs/update/${task.id}`, {
       method: 'PUT',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,

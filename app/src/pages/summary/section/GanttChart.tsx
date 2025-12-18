@@ -98,7 +98,7 @@ const GanttChart: React.FC = () => {
         const token = localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:5000/stats/gantt', {
+        const response = await fetch('/stats/gantt', {
           headers: { Authorization: `Bearer ${token}` },
           credentials: 'include',
         });

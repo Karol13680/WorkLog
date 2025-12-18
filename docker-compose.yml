@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: worklog
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    # Dodaj to:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d worklog"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: flask_app
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:1234@db:5432/worklog
+      - SECRET_KEY=your-secret-key-here
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+    depends_on:
+      db:
+        condition: service_healthy 
+
+volumes:
+  postgres_data:

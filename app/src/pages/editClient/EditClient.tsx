@@ -45,7 +45,7 @@ const EditClient: React.FC = () => {
           return;
         }
 
-        const res = await fetch(`http://localhost:5000/clients/${id}`, {
+        const res = await fetch(`/clients/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("📥 Odpowiedź fetch:", res.status, res.statusText);
@@ -113,7 +113,7 @@ const EditClient: React.FC = () => {
       console.log("📤 Wysyłane dane do API:", formData, logoFile);
 
       const token = localStorage.getItem("access_token") || "";
-      const res = await fetch(`http://localhost:5000/clients/update/${id}`, {
+      const res = await fetch(`/clients/update/${id}`, {
         method: "PUT",
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},

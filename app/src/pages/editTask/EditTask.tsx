@@ -65,7 +65,7 @@ const EditTask: React.FC = () => {
             return;
             }
 
-            const res = await fetch(`http://localhost:5000/jobs/${id}`, {
+            const res = await fetch(`/jobs/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -148,7 +148,7 @@ const EditTask: React.FC = () => {
       data.append("project_type", formData.projectType);
 
       const token = localStorage.getItem("access_token") || "";
-      const res = await fetch(`http://localhost:5000/jobs/update/${id}`, {
+      const res = await fetch(`/jobs/update/${id}`, {
         method: "PUT",
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "./access.scss";
+import "./Access.scss";
 
 import RegistrationForm from "../../components/form/access/RegistrationForm.tsx";
 import Logo from "../../assets/img/logo.png";

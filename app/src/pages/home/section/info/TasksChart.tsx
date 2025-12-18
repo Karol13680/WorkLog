@@ -33,7 +33,7 @@ const TasksChart: React.FC = () => {
         const token = localStorage.getItem('access_token');
         if (!token) throw new Error('Brak tokenu autoryzacji');
 
-        const response = await fetch('http://localhost:5000/jobs/all-user', {
+        const response = await fetch('/jobs/all-user', {
           headers: { Authorization: `Bearer ${token}` },
           credentials: 'include',
         });

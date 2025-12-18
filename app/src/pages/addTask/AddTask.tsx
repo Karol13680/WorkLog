@@ -68,7 +68,7 @@ const ProjectForm: React.FC = () => {
         const token = localStorage.getItem("access_token");
         if (!token) return;
 
-        const res = await fetch("http://localhost:5000/clients/all-user", {
+        const res = await fetch("/clients/all-user", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(await res.text());
@@ -112,7 +112,7 @@ const ProjectForm: React.FC = () => {
       data.append('id_client', formData.client);
 
       const token = localStorage.getItem('access_token') || '';
-      const res = await fetch('http://localhost:5000/jobs/add', {
+      const res = await fetch('/jobs/add', {
         method: 'POST',
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -353,7 +353,7 @@ const ClientForm: React.FC = () => {
       if (formData.logo) data.append('logo', formData.logo);
 
       const token = localStorage.getItem('access_token') || '';
-      const res = await fetch('http://localhost:5000/clients/add', {
+      const res = await fetch('/clients/add', {
         method: 'POST',
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},

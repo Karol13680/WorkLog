@@ -27,7 +27,7 @@ const TaskTable: React.FC = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('access_token') || '';
-        const res = await fetch('http://localhost:5000/jobs/all-user', {
+        const res = await fetch('/jobs/all-user', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -85,7 +85,7 @@ const TaskTable: React.FC = () => {
 
     try {
       const token = localStorage.getItem('access_token') || '';
-      const res = await fetch(`http://localhost:5000/jobs/delete/${taskId}`, {
+      const res = await fetch(`/jobs/delete/${taskId}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
