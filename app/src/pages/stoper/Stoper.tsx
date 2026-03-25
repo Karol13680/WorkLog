@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './Stoper.scss';
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from '../../api/apiClient';
+
 import Header from '../../components/header/Header';
 import InfoTile from '../../components/tiles/infoTile/InfoTile';
 import ProjectTile from '../../components/tiles/projectTile/ProjectTile';
 import TimeTracking from "./section/TimeTracking";
 import RecentActivities from './section/RecentActivities';
 import ManualEntry from './section/ManualEntry';
+
+import './Stoper.scss';
 
 interface Project {
   id: number;
@@ -26,60 +30,36 @@ interface Stats {
 }
 
 const Stoper: React.FC = () => {
+  const { getToken } = useAuth();
+  
   const [projects, setProjects] = useState<Project[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [stats, setStats] = useState<Stats | null>(null);
-
+  
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       try {
-        const token = localStorage.getItem("access_token");
+        const token = await getToken();
         if (!token) return;
 
-        const response = await fetch("/jobs/all-user", {
-          headers: { "Authorization": `Bearer ${token}` },
-          credentials: "include"
-        });
+        const [projectsData, statsData] = await Promise.all([
+          apiFetch("/jobs/all-user", { headers: { Authorization: `Bearer ${token}` } }),
+          apiFetch("/stats/dashboard", { headers: { Authorization: `Bearer ${token}` } })
+        ]);
 
-        if (!response.ok) throw new Error("Nie udało się pobrać projektów");
-
-        const data: Project[] = await response.json();
-        setProjects(data);
+        setProjects(projectsData || []);
+        setStats(statsData);
       } catch (error) {
-        console.error("Błąd pobierania projektów:", error);
+        console.error(error);
       }
     };
-
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        if (!token) return;
-
-        const response = await fetch("/stats/dashboard", {
-          headers: { "Authorization": `Bearer ${token}` },
-          credentials: "include"
-        });
-
-        if (!response.ok) throw new Error("Nie udało się pobrać statystyk");
-
-        const data: Stats = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error("Błąd pobierania statystyk:", error);
-      }
-    };
-
-    fetchStats();
-  }, [refreshKey]);
+    fetchData();
+  }, [getToken, refreshKey]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -87,20 +67,17 @@ const Stoper: React.FC = () => {
         setIsDropdownVisible(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [searchContainerRef]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const handleManualAdded = () => {
+  const handleDataRefresh = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  const filteredProjects = projects.filter(project =>
-    project.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProjects = searchTerm === "" 
+    ? projects 
+    : projects.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleSelectProject = (project: Project) => {
     setSelectedProject(project);
@@ -108,75 +85,96 @@ const Stoper: React.FC = () => {
     setIsDropdownVisible(false);
   };
 
-  const formatTime = (totalHours: number) => {
-    const hours = Math.floor(totalHours);
-    const minutes = Math.round((totalHours - hours) * 60);
-    return `${hours} h ${minutes} min`;
-  };
-
   return (
     <>
       <Header />
       <main className="stoper-grid">
+        
         <div className="grid-item item-timer">
-          <TimeTracking key={refreshKey} selectedProjectId={selectedProject?.id || null} />
+          <TimeTracking 
+            selectedProjectId={selectedProject?.id || null} 
+            onStop={handleDataRefresh} 
+          />
         </div>
 
         <div className="grid-item info-tiles-container">
           {stats ? (
             <>
               <InfoTile title={stats.active_projects.title} value={stats.active_projects.value} />
-              <InfoTile title={stats.time_worked.title} value={formatTime(stats.time_worked.value)} />
+              <InfoTile title={stats.time_worked.title} value={`${stats.time_worked.value} h`} />
               <InfoTile title={stats.completed_projects.title} value={stats.completed_projects.value} />
               <InfoTile title={stats.profit.title} value={stats.profit.value} />
             </>
           ) : (
-            <p>Ładowanie statystyk...</p>
+            <div className="loading-stats">Pobieranie danych...</div>
           )}
         </div>
 
         <div className="grid-item item-current">
-          <div className="widget">
+          <div className="widget current-task">
             <h3 className="widget__title">Aktualne zlecenie</h3>
-            <div className="current-task__input-wrapper" ref={searchContainerRef}>
-              <input
-                type="text"
-                placeholder="Wybierz projekt..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setIsDropdownVisible(true);
-                  if (selectedProject && e.target.value !== selectedProject.title) {
-                    setSelectedProject(null);
-                  }
-                }}
-                onFocus={() => setIsDropdownVisible(true)}
-              />
-              {isDropdownVisible && filteredProjects.length > 0 && (
-                <ul className="project-dropdown">
-                  {filteredProjects.map(project => (
-                    <li key={project.id} onClick={() => handleSelectProject(project)}>
-                      {project.title}
-                    </li>
-                  ))}
+            
+            <div className="current-task__search-container" ref={searchContainerRef}>
+              <div className="current-task__input-wrapper">
+                <input
+                  type="text"
+                  className="current-task__search-input"
+                  placeholder="Kliknij, aby wybrać projekt..."
+                  value={searchTerm}
+                  onFocus={() => setIsDropdownVisible(true)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setIsDropdownVisible(true);
+                    if (selectedProject && e.target.value !== selectedProject.title) {
+                      setSelectedProject(null);
+                    }
+                  }}
+                />
+              </div>
+
+              {isDropdownVisible && (
+                <ul className="current-task__dropdown">
+                  {filteredProjects.length > 0 ? (
+                    filteredProjects.map(project => (
+                      <li 
+                        key={project.id} 
+                        className="current-task__dropdown-item"
+                        onClick={() => handleSelectProject(project)}
+                      >
+                        <div className="project-info">
+                          <span className="project-name">{project.title}</span>
+                          <span className="project-client">{project.client}</span>
+                        </div>
+                        <span className="project-rate">{project.rate}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="current-task__dropdown-empty">Nie znaleziono projektu</li>
+                  )}
                 </ul>
               )}
             </div>
-            {selectedProject ? (
-              <ProjectTile {...selectedProject} />
-            ) : (
-              <p className="widget__placeholder">Wybierz projekt z listy, aby rozpocząć...</p>
-            )}
+
+            <div className="current-task__preview">
+              {selectedProject ? (
+                <ProjectTile {...selectedProject} />
+              ) : (
+                <div className="current-task__placeholder">
+                  <p>Wybierz projekt z listy powyżej, aby aktywować stoper.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="grid-item item-recent">
-          <RecentActivities key={refreshKey} />
+          <RecentActivities key={`recent-${refreshKey}`} />
         </div>
 
         <div className="grid-item item-manual">
-          <ManualEntry onAdded={handleManualAdded} />
+          <ManualEntry onAdded={handleDataRefresh} />
         </div>
+
       </main>
     </>
   );

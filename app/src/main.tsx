@@ -1,6 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ClerkProvider } from "@clerk/clerk-react";
+import { plPL } from "@clerk/localizations";
 import "./index.scss";
 
 import Login from "./pages/access/Login.tsx";
@@ -13,14 +15,19 @@ import AddTask from "./pages/addTask/AddTask.tsx";
 import EditTask from "./pages/editTask/EditTask.tsx";
 import EditClient from "./pages/editClient/EditClient.tsx";
 
-import { AuthProvider } from "./context/AuthContext.tsx";
 import ProtectedRoute from "./routes/ProtectedRoute.tsx";
 import PublicRoute from "./routes/PublicRoute.tsx";
 
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} localization={plPL}>
+      <BrowserRouter>
         <Routes>
           <Route
             path="/"
@@ -96,7 +103,7 @@ createRoot(document.getElementById("root")!).render(
           />
           <Route path="*" element={<Login />} />
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ClerkProvider>
   </StrictMode>
 );

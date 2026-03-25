@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BsPlus } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from '../../api/apiClient';
+
 import TaskColumn from '../taskColumn/TaskColumn';
 import type { Task, Status } from '../tiles/taskCard/TaskCard';
 import './TaskTable.scss';
 
+// Mapowanie wyświetlania: Klucz frontendu -> Nazwa wyświetlana (i nazwa w bazie)
 const statusMap: Record<Status, string> = {
   upcoming: 'Nadchodzące',
   'in-progress': 'Trwające',
@@ -12,6 +16,7 @@ const statusMap: Record<Status, string> = {
   completed: 'Zakończone'
 };
 
+// Mapowanie ID: Klucz frontendu -> ID w bazie danych (tabela status)
 const statusToId: Record<Status, number> = {
   upcoming: 1,
   'in-progress': 2,
@@ -22,6 +27,7 @@ const statusToId: Record<Status, number> = {
 type ColumnsState = Record<Status, Task[]>;
 
 const TaskTable: React.FC = () => {
+  const { getToken } = useAuth();
   const [columns, setColumns] = useState<ColumnsState>({
     upcoming: [],
     'in-progress': [],
@@ -30,26 +36,28 @@ const TaskTable: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token') || '';
-      const res = await fetch('/jobs/all-user', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      const token = await getToken();
+      if (!token) return;
+
+      const data = await apiFetch('/jobs/all-user', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
 
-      if (res.ok) {
-        const tasksByStatus: ColumnsState = {
-          upcoming: [],
-          'in-progress': [],
-          verification: [],
-          completed: []
-        };
+      const tasksByStatus: ColumnsState = {
+        upcoming: [],
+        'in-progress': [],
+        verification: [],
+        completed: []
+      };
 
+      if (Array.isArray(data)) {
         data.forEach((job: any) => {
+          // Szukamy klucza (np. 'upcoming') na podstawie nazwy statusu z backendu
           const statusKey = (Object.keys(statusMap).find(
-            key => statusMap[key as Status] === job.status
+            key => statusMap[key as Status].toLowerCase() === (job.status || '').toLowerCase()
           ) as Status) || 'upcoming';
 
           tasksByStatus[statusKey].push({
@@ -58,59 +66,64 @@ const TaskTable: React.FC = () => {
             client: job.client || 'Brak klienta',
             status: statusKey,
             date: job.date || '',
-            duration: job.duration?.toString() || '',
-            priority: job.priority || 'low',
+            duration: job.duration?.toString() || '0',
+            priority: (job.priority || 'low').toLowerCase(),
           });
         });
-        setColumns(tasksByStatus);
       }
+      setColumns(tasksByStatus);
     } catch (err) {
-      console.error(err);
+      console.error("Błąd pobierania zadań do tablicy:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [getToken]);
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [fetchTasks]);
 
   const handleStatusUpdate = async (taskId: number, newStatus: Status) => {
-    const token = localStorage.getItem('access_token') || '';
-    const formData = new FormData();
-    formData.append('id_status', statusToId[newStatus].toString());
-
     try {
-      const res = await fetch(`/jobs/update/${taskId}`, {
+      const token = await getToken();
+      if (!token) return;
+
+      // Przygotowujemy dane do aktualizacji (backend przyjmuje FormData)
+      const formData = new FormData();
+      formData.append('id_status', statusToId[newStatus].toString());
+
+      const res = await apiFetch(`/jobs/update/${taskId}`, {
         method: 'PUT',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData, // apiFetch powinien obsługiwać FormData
       });
 
-      if (res.ok) {
-        setColumns(prev => {
-          let movedTask: Task | undefined;
-          const newColumns = { ...prev };
-          
-          for (const key in newColumns) {
-            const statusKey = key as Status;
-            const taskIndex = newColumns[statusKey].findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-              [movedTask] = newColumns[statusKey].splice(taskIndex, 1);
-              break;
-            }
-          }
+      // Jeśli aktualizacja w bazie się udała, przesuwamy kafelek lokalnie (optymalizacja UI)
+      setColumns(prev => {
+        const newColumns = { ...prev };
+        let taskToMove: Task | undefined;
 
-          if (movedTask) {
-            movedTask.status = newStatus;
-            newColumns[newStatus] = [...newColumns[newStatus], movedTask];
+        // 1. Znajdź i usuń zadanie z obecnej kolumny
+        for (const key in newColumns) {
+          const sKey = key as Status;
+          const index = newColumns[sKey].findIndex(t => t.id === taskId);
+          if (index !== -1) {
+            [taskToMove] = newColumns[sKey].splice(index, 1);
+            break;
           }
+        }
 
-          return { ...newColumns };
-        });
-      }
+        // 2. Dodaj zadanie do nowej kolumny
+        if (taskToMove) {
+          taskToMove.status = newStatus;
+          newColumns[newStatus] = [...newColumns[newStatus], taskToMove];
+        }
+
+        return { ...newColumns };
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Błąd podczas zmiany statusu:", err);
+      alert("Nie udało się zmienić statusu zadania.");
     }
   };
 
@@ -124,7 +137,7 @@ const TaskTable: React.FC = () => {
       </header>
 
       {loading ? (
-        <p>Ładowanie projektów...</p>
+        <div className="task-table__loading">Ładowanie tablicy...</div>
       ) : (
         <div className="task-table__board">
           {(Object.keys(statusMap) as Status[]).map((key) => (

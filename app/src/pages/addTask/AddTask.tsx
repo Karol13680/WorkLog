@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BsPlus } from 'react-icons/bs';
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from '../../api/apiClient';
 
 import Header from '../../components/header/Header';
 import ContentContainer from '../../components/contentContainer/ContentContainer';
@@ -38,6 +40,7 @@ const statuses: OptionType[] = [
 ];
 
 const ProjectForm: React.FC = () => {
+  const { getToken } = useAuth();
   const [formData, setFormData] = useState({
     task: '',
     projectType: '',
@@ -60,19 +63,16 @@ const ProjectForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // 🔹 Pobranie listy klientów
   useEffect(() => {
     const fetchClients = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("access_token");
+        const token = await getToken();
         if (!token) return;
 
-        const res = await fetch("/clients/all-user", {
+        const data = await apiFetch("/clients/all-user", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
 
         setClients(data.map((c: any) => ({ value: c.id.toString(), label: c.name })));
       } catch (err) {
@@ -83,9 +83,8 @@ const ProjectForm: React.FC = () => {
     };
 
     fetchClients();
-  }, []);
+  }, [getToken]);
 
-  // 🔹 Obsługa zmian inputów
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -93,7 +92,6 @@ const ProjectForm: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 Wysłanie danych do backendu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -111,41 +109,35 @@ const ProjectForm: React.FC = () => {
       data.append('id_status', formData.status);
       data.append('id_client', formData.client);
 
-      const token = localStorage.getItem('access_token') || '';
-      const res = await fetch('/jobs/add', {
+      const token = await getToken();
+      
+      await apiFetch('/jobs/add', {
         method: 'POST',
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: 'include',
       });
 
-      const result = await res.json();
-
-      if (res.ok) {
-        setMessage('✅ Projekt został dodany pomyślnie!');
-        setFormData({
-          task: '',
-          projectType: '',
-          shortDescription: '',
-          details: '',
-          priority: '',
-          status: '',
-          startDate: '',
-          endDate: '',
-          estimatedTime: '',
-          rate: '',
-          client: '',
-          companyUrl: '',
-          companyEmail: '',
-          companyPhone: '',
-          link1: '',
-        });
-      } else {
-        setMessage(`❌ Błąd: ${result.message || 'Nie udało się dodać projektu.'}`);
-      }
-    } catch (error) {
+      setMessage('✅ Projekt został dodany pomyślnie!');
+      setFormData({
+        task: '',
+        projectType: '',
+        shortDescription: '',
+        details: '',
+        priority: '',
+        status: '',
+        startDate: '',
+        endDate: '',
+        estimatedTime: '',
+        rate: '',
+        client: '',
+        companyUrl: '',
+        companyEmail: '',
+        companyPhone: '',
+        link1: '',
+      });
+    } catch (error: any) {
       console.error('Błąd:', error);
-      setMessage('Wystąpił błąd sieci lub serwera.');
+      setMessage(`❌ Błąd: ${error.message || 'Nie udało się dodać projektu.'}`);
     } finally {
       setLoading(false);
     }
@@ -154,7 +146,6 @@ const ProjectForm: React.FC = () => {
   return (
     <form className="dynamic-form" onSubmit={handleSubmit}>
       <div className="form-grid form-grid--4-cols">
-        {/* 🔹 Sekcja ogólna */}
         <FormSection title="Informacje ogólne">
           <FormField
             label="Nazwa projektu"
@@ -190,7 +181,6 @@ const ProjectForm: React.FC = () => {
           />
         </FormSection>
 
-        {/* 🔹 Sekcja czasu i statusu */}
         <FormSection title="Informacje dot. czasu i statusu">
           <FormField
             label="Priorytet"
@@ -234,7 +224,6 @@ const ProjectForm: React.FC = () => {
             value={formData.estimatedTime}
             onChange={handleChange}
           />
-          {/* 💰 Nowe pole – stawka */}
           <FormField
             label="Stawka (zł/h)"
             name="rate"
@@ -245,7 +234,6 @@ const ProjectForm: React.FC = () => {
           />
         </FormSection>
 
-        {/* 🔹 Sekcja klient */}
         <FormSection title="Klient">
           <FormField
             label="Klient"
@@ -281,7 +269,6 @@ const ProjectForm: React.FC = () => {
           />
         </FormSection>
 
-        {/* 🔹 Sekcja materiałów */}
         <FormSection title="Materiały dodatkowe">
           <FormField
             label="Link 1"
@@ -313,6 +300,7 @@ const ProjectForm: React.FC = () => {
 };
 
 const ClientForm: React.FC = () => {
+  const { getToken } = useAuth();
   const [formData, setFormData] = useState({
     clientName: '',
     clientDescription: '',
@@ -352,32 +340,26 @@ const ClientForm: React.FC = () => {
       data.append('address', '');
       if (formData.logo) data.append('logo', formData.logo);
 
-      const token = localStorage.getItem('access_token') || '';
-      const res = await fetch('/clients/add', {
+      const token = await getToken();
+      
+      await apiFetch('/clients/add', {
         method: 'POST',
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: 'include',
       });
 
-      const result = await res.json();
-
-      if (res.ok) {
-        setMessage('✅ Klient został dodany pomyślnie!');
-        setFormData({
-          clientName: '',
-          clientDescription: '',
-          clientPhone: '',
-          clientUrl: '',
-          clientEmail: '',
-          logo: null,
-        });
-      } else {
-        setMessage(`❌ Błąd: ${result.message || 'Nie udało się dodać klienta.'}`);
-      }
-    } catch (error) {
+      setMessage('✅ Klient został dodany pomyślnie!');
+      setFormData({
+        clientName: '',
+        clientDescription: '',
+        clientPhone: '',
+        clientUrl: '',
+        clientEmail: '',
+        logo: null,
+      });
+    } catch (error: any) {
       console.error('Błąd:', error);
-      setMessage('Wystąpił błąd sieci lub serwera.');
+      setMessage(`❌ Błąd: ${error.message || 'Nie udało się dodać klienta.'}`);
     } finally {
       setLoading(false);
     }

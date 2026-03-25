@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsPlus } from "react-icons/bs";
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from "../../api/apiClient";
 
 import Header from "../../components/header/Header";
 import ContentContainer from "../../components/contentContainer/ContentContainer";
@@ -27,19 +29,19 @@ interface Project {
 interface Client {
   id: number;
   name: string;
-  description: string | null;
-  email?: string | null;
-  phone?: string | null;
-  logo?: string | null;
+  description: string;
+  email: string;
+  phone: string;
+  logo: string | null;
 }
 
 const ProjectManagement: React.FC = () => {
+  const { getToken } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>("projects");
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Filtrowanie i wyszukiwarka
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -49,83 +51,47 @@ const ProjectManagement: React.FC = () => {
 
   const ActionButton: React.FC = () => (
     <Link to="/add-task" className="action-button">
-      {activeTab === "projects" ? "Nowy projekt" : "Nowy klient"} <BsPlus />
+      {isProjects ? "Nowy projekt" : "Nowy klient"} <BsPlus />
     </Link>
   );
 
-  // Pobieranie projektów
   useEffect(() => {
-    if (isProjects) {
-      const fetchProjects = async () => {
-        setLoading(true);
-        try {
-          const token = localStorage.getItem("access_token");
-          if (!token) return;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        if (!token) return;
 
-          const response = await fetch("/jobs/all-user", {
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: "include",
+        if (isProjects) {
+          const data = await apiFetch("/jobs/all-user", {
+            headers: { Authorization: `Bearer ${token}` }
           });
-
-          if (!response.ok) {
-            console.error("Błąd pobierania projektów:", await response.text());
-            return;
-          }
-
-          const data = await response.json();
           setProjects(data);
-        } catch (error) {
-          console.error("Błąd połączenia z API:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchProjects();
-    }
-  }, [isProjects]);
-
-  // Pobieranie klientów
-  useEffect(() => {
-    if (!isProjects) {
-      const fetchClients = async () => {
-        setLoading(true);
-        try {
-          const token = localStorage.getItem("access_token");
-          if (!token) return;
-
-          const response = await fetch("/clients/all-user", {
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: "include",
+        } else {
+          const data = await apiFetch("/clients/all-user", {
+            headers: { Authorization: `Bearer ${token}` }
           });
-
-          if (!response.ok) {
-            console.error("Błąd pobierania klientów:", await response.text());
-            return;
-          }
-
-          const data = await response.json();
-          const formatted = data.map((c: any) => ({
+          
+          const formattedClients = data.map((c: any) => ({
             id: c.id,
             name: c.name,
             description: c.description || "Brak opisu",
-            logo: c.logo || null,
-            email: c.contact?.email || null,
-            phone: c.contact?.phone || null,
+            logo: c.logo,
+            email: c.contact?.email || "Brak e-mail",
+            phone: c.contact?.phone || "Brak telefonu",
           }));
-          setClients(formatted);
-        } catch (error) {
-          console.error("Błąd połączenia z API:", error);
-        } finally {
-          setLoading(false);
+          setClients(formattedClients);
         }
-      };
+      } catch (error) {
+        console.error("Błąd pobierania danych:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchClients();
-    }
-  }, [isProjects]);
+    fetchData();
+  }, [isProjects, getToken]);
 
-  // ✅ Filtrowanie projektów
   const filteredProjects = projects.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesClient = selectedClient ? p.client === selectedClient : true;
@@ -133,7 +99,6 @@ const ProjectManagement: React.FC = () => {
     return matchesSearch && matchesClient && matchesStatus;
   });
 
-  // ✅ Filtrowanie klientów
   const filteredClients = clients.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -203,9 +168,9 @@ const ProjectManagement: React.FC = () => {
               >
                 <ClientTile
                   name={client.name}
-                  description={client.description || "Brak opisu"}
-                  email={client.email || ""}
-                  phone={client.phone || ""}
+                  description={client.description}
+                  email={client.email}
+                  phone={client.phone}
                   logo={client.logo}
                 />
               </Link>

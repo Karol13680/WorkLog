@@ -1,6 +1,5 @@
 # from .hello import hello_bp
 # from .main import main_bp
-from .auth import auth_bp
 from .clients import client_bp
 from .clients_update import client_update_bp
 from .clients_delete import client_delete_bp
@@ -19,7 +18,6 @@ from .gantt import gantt_bp
 def register_routes(app):
     # app.register_blueprint(main_bp)
     # app.register_blueprint(hello_bp)
-    app.register_blueprint(auth_bp)
     app.register_blueprint(client_bp)
     app.register_blueprint(client_update_bp)
     app.register_blueprint(client_delete_bp)

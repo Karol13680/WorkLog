@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from "../../api/apiClient";
 
 import Header from "../../components/header/Header";
 import ContentContainer from "../../components/contentContainer/ContentContainer";
@@ -20,6 +22,8 @@ interface EditClientData {
 
 const EditClient: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { getToken } = useAuth();
+  
   const [formData, setFormData] = useState<EditClientData>({
     name: "",
     description: "",
@@ -37,23 +41,13 @@ const EditClient: React.FC = () => {
   useEffect(() => {
     const fetchClient = async () => {
       try {
-        console.log("📡 Pobieranie klienta ID:", id);
         setLoading(true);
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-          console.warn("⚠️ Brak tokenu w localStorage!");
-          return;
-        }
+        const token = await getToken();
+        if (!token) return;
 
-        const res = await fetch(`/clients/${id}`, {
+        const data = await apiFetch(`/clients/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("📥 Odpowiedź fetch:", res.status, res.statusText);
-
-        if (!res.ok) throw new Error(await res.text());
-
-        const data = await res.json();
-        console.log("📦 Dane pobrane z backendu:", data);
 
         setFormData({
           name: data.client?.name || "",
@@ -65,7 +59,6 @@ const EditClient: React.FC = () => {
           logo: data.client?.logo || "",
         });
 
-
       } catch (err) {
         console.error("❌ Błąd pobierania klienta:", err);
       } finally {
@@ -74,13 +67,12 @@ const EditClient: React.FC = () => {
     };
 
     fetchClient();
-  }, [id]);
+  }, [id, getToken]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    console.log(`✏️ Zmieniono pole [${name}] →`, value);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -90,11 +82,9 @@ const EditClient: React.FC = () => {
     if (e.target instanceof HTMLInputElement && e.target.type === "file") {
       const file = e.target.files?.[0] || null;
       setLogoFile(file);
-      console.log("🖼️ Wybrano logo:", file);
     }
   };
 
-  // 🔹 Zapis zmian klienta
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -110,26 +100,18 @@ const EditClient: React.FC = () => {
       data.append("address", formData.address);
       if (logoFile) data.append("logo", logoFile);
 
-      console.log("📤 Wysyłane dane do API:", formData, logoFile);
-
-      const token = localStorage.getItem("access_token") || "";
-      const res = await fetch(`/clients/update/${id}`, {
+      const token = await getToken();
+      
+      await apiFetch(`/clients/update/${id}`, {
         method: "PUT",
         body: data,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
-      const result = await res.json();
-      console.log("📬 Odpowiedź z API (update):", result);
-
-      if (res.ok) {
-        setMessage("✅ Klient został zaktualizowany pomyślnie!");
-      } else {
-        setMessage(`❌ Błąd: ${result.message || "Nie udało się zapisać zmian."}`);
-      }
-    } catch (error) {
+      setMessage("✅ Klient został zaktualizowany pomyślnie!");
+    } catch (error: any) {
       console.error("💥 Błąd podczas zapisu klienta:", error);
-      setMessage("Wystąpił błąd sieci lub serwera.");
+      setMessage(`❌ Błąd: ${error.message || "Nie udało się zapisać zmian."}`);
     } finally {
       setLoading(false);
     }
@@ -237,25 +219,17 @@ const EditClient: React.FC = () => {
                 setMessage(null);
 
                 try {
-                  const token = localStorage.getItem("access_token") || "";
-                  const res = await fetch(`http://localhost:5000/clients/delete/${id}`, {
+                  const token = await getToken();
+                  await apiFetch(`/clients/delete/${id}`, {
                     method: "DELETE",
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                   });
 
-                  const result = await res.json();
-                  console.log("📬 Odpowiedź z API (delete):", result);
-
-                  if (res.ok) {
-                    setMessage("✅ Klient został usunięty pomyślnie!");
-                    // Przekierowanie użytkownika po usunięciu
-                    setTimeout(() => window.history.back(), 1500);
-                  } else {
-                    setMessage(`❌ Błąd: ${result.message || "Nie udało się usunąć klienta."}`);
-                  }
-                } catch (err) {
+                  setMessage("✅ Klient został usunięty pomyślnie!");
+                  setTimeout(() => window.history.back(), 1500);
+                } catch (err: any) {
                   console.error("💥 Błąd podczas usuwania klienta:", err);
-                  setMessage("Wystąpił błąd sieci lub serwera.");
+                  setMessage(`❌ Błąd: ${err.message || "Nie udało się usunąć klienta."}`);
                 } finally {
                   setLoading(false);
                 }

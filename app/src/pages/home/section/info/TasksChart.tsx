@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from '../../../../api/apiClient'; 
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -23,6 +25,7 @@ interface Project {
 }
 
 const TasksChart: React.FC = () => {
+  const { getToken } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -30,19 +33,15 @@ const TasksChart: React.FC = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) throw new Error('Brak tokenu autoryzacji');
+        const token = await getToken();
+        if (!token) return;
 
-        const response = await fetch('/jobs/all-user', {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: 'include',
+        // Używamy apiFetch zamiast surowego fetch
+        const data: Project[] = await apiFetch('/jobs/all-user', {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error('Nie udało się pobrać projektów');
-
-        const data: Project[] = await response.json();
-
-        // ✅ Filtruj tylko zakończone projekty
+        // Filtrujemy projekty o statusie "Zakończone"
         const completed = data.filter(
           (p) => p.status && p.status.toLowerCase().includes('zakończ')
         );
@@ -56,9 +55,8 @@ const TasksChart: React.FC = () => {
     };
 
     fetchProjects();
-  }, []);
+  }, [getToken]);
 
-  // ✅ Grupowanie zakończonych projektów po tytule (jak w oryginale)
   const projectStats = projects.reduce<Record<string, number>>((acc, project) => {
     const key = project.title || 'Inne';
     acc[key] = (acc[key] || 0) + 1;
@@ -66,7 +64,7 @@ const TasksChart: React.FC = () => {
   }, {});
 
   const data = {
-    labels: [''], // pojedynczy pasek złożony z wielu kolorowych segmentów
+    labels: [''], 
     datasets: Object.entries(projectStats).map(([key, value], index) => {
       const colors = ['#F37F7E', '#8CB0EB', '#4A86F5', '#FAD15A', '#A1D490', '#9D84F1', '#6EC1E4'];
       return {
@@ -79,7 +77,7 @@ const TasksChart: React.FC = () => {
   };
 
   const options = {
-    indexAxis: 'y' as const, // ✅ poziomy wykres
+    indexAxis: 'y' as const,
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -109,14 +107,17 @@ const TasksChart: React.FC = () => {
     },
   };
 
-  if (loading) return <p>Ładowanie wykresu...</p>;
-  if (projects.length === 0) return <p>Brak zakończonych projektów do wyświetlenia.</p>;
-
+  if (loading) return <div className="tasks-chart__loading">Ładowanie wykresu...</div>;
+  
   return (
     <div className="tasks-chart">
       <BsThreeDotsVertical className="tasks-chart__menu-icon" />
       <div className="tasks-chart__chart-wrapper">
-        <Bar options={options} data={data} />
+        {projects.length > 0 ? (
+          <Bar options={options} data={data} />
+        ) : (
+          <p className="no-data">Brak zakończonych projektów.</p>
+        )}
       </div>
     </div>
   );

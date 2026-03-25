@@ -1,5 +1,5 @@
 from sqlalchemy.orm import relationship
-from app import db
+from app.extensions import db
 
 class Client(db.Model):
     __tablename__ = "clients"
@@ -10,8 +10,8 @@ class Client(db.Model):
     logo = db.Column(db.Text)
     
     id_contact = db.Column(db.Integer, db.ForeignKey("contacts.id"), unique=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # Ustawiamy id_user (zamiast user_id)
+    id_user = db.Column(db.String(255), db.ForeignKey("users.id"), nullable=False)
 
     contact = relationship("Contact", back_populates="client")
     jobs = relationship("Job", back_populates="client")

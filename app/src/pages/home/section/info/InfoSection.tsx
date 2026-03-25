@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from "@clerk/clerk-react";
+import { apiFetch } from '../../../../api/apiClient'; 
 import { FaBriefcase, FaClock, FaCheckCircle, FaDollarSign } from 'react-icons/fa';
 import InfoTile from "../../../../components/tiles/infoTile/InfoTile";
 import TasksChart from "./TasksChart";
@@ -7,7 +9,7 @@ import './InfoSection.scss';
 interface StatItem {
   title: string;
   value: string | number;
-  percentageChange: number | null;
+  percentageChange?: number | null; // Opcjonalne, jeśli backend jeszcze tego nie wysyła
 }
 
 interface DashboardStats {
@@ -18,22 +20,21 @@ interface DashboardStats {
 }
 
 const InfoSection: React.FC = () => {
+  const { getToken } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const res = await fetch('/stats/dashboard', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const token = await getToken();
+        if (!token) return;
+
+        const data = await apiFetch('/stats/dashboard', {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await res.json();
-        if (res.ok) {
-          setStats(data);
-        }
+        
+        setStats(data);
       } catch (err) {
         console.error("Błąd pobierania statystyk:", err);
       } finally {
@@ -42,7 +43,7 @@ const InfoSection: React.FC = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [getToken]);
 
   if (loading || !stats) {
     return <div className="info-section__loading">Ładowanie statystyk...</div>;
@@ -64,7 +65,7 @@ const InfoSection: React.FC = () => {
             icon={item.icon}
             title={item.data.title}
             value={item.data.value}
-            percentageChange={item.data.percentageChange}
+            percentageChange={item.data.percentageChange || null}
           />
         ))}
       </div>

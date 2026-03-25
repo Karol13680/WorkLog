@@ -56,3 +56,106 @@
     }
   }
 }
+
+.current-task {
+  &__search-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  &__search-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    color: #333;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      background: #fff;
+      border-color: var(--main-blue); // Twoja zmienna koloru
+      box-shadow: 0 0 0 4px rgba(140, 176, 235, 0.2); // Miękka obwódka
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    list-style: none;
+    padding: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    
+    // Stylizacja scrollbara
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 10px; }
+  }
+
+  &__dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f0f4ff; // Delikatny niebieski na hover
+      
+      .project-name { color: var(--main-blue); }
+    }
+
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      
+      .project-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #2d3436;
+      }
+      
+      .project-client {
+        font-size: 0.75rem;
+        color: #636e72;
+      }
+    }
+
+    .project-rate {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #27ae60; // Zielony dla stawki
+      background: #e6f7ee;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+  }
+
+  &__dropdown-empty {
+    padding: 15px;
+    text-align: center;
+    color: #b2bec3;
+    font-size: 0.85rem;
+  }
+
+  &__placeholder {
+    padding: 40px 20px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 12px;
+    text-align: center;
+    color: #a0a0a0;
+    font-size: 0.9rem;
+  }
+}
