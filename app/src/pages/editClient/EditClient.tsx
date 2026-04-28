@@ -202,34 +202,32 @@ const EditClient: React.FC = () => {
             </button>
 
             <button
-              type="button"
-              className="button button--danger"
-              disabled={loading}
-              onClick={async () => {
-                if (!window.confirm("Czy na pewno chcesz usunąć tego klienta?")) return;
+  type="button"
+  className="button button--danger"
+  disabled={loading}
+  onClick={async () => {
+    if (!window.confirm("Czy na pewno chcesz usunąć tego klienta?")) return;
 
-                setLoading(true);
-                setMessage(null);
+    setLoading(true);
+    setMessage(null);
 
-                try {
-                  const token = await getToken();
-                  await apiFetch(`/clients/delete/${id}`, {
-                    method: "DELETE",
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                  });
+    try {
+      await api(`/clients/delete/${id}`, {
+        method: "DELETE",
+      });
 
-                  setMessage("✅ Klient został usunięty pomyślnie!");
-                  setTimeout(() => window.history.back(), 1500);
-                } catch (err: any) {
-                  console.error("💥 Błąd podczas usuwania klienta:", err);
-                  setMessage(`❌ Błąd: ${err.message || "Nie udało się usunąć klienta."}`);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              Usuń klienta
-            </button>
+      setMessage("✅ Klient został usunięty pomyślnie!");
+      setTimeout(() => window.history.back(), 1500);
+    } catch (err: any) {
+      console.error(err);
+      setMessage(`❌ Błąd: ${err.message || "Nie udało się usunąć klienta."}`);
+    } finally {
+      setLoading(false);
+    }
+  }}
+>
+  Usuń klienta
+</button>
           </div>
           {message && <p className="form-message">{message}</p>}
         </form>

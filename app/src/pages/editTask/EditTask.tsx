@@ -253,34 +253,32 @@ const EditTask: React.FC = () => {
             </button>
 
             <button
-              type="button"
-              className="button button--danger"
-              disabled={loading}
-              onClick={async () => {
-                if (!window.confirm("Czy na pewno chcesz usunąć ten projekt?")) return;
+  type="button"
+  className="button button--danger"
+  disabled={loading}
+  onClick={async () => {
+    if (!window.confirm("Czy na pewno chcesz usunąć ten projekt?")) return;
 
-                setLoading(true);
-                setMessage(null);
+    setLoading(true);
+    setMessage(null);
 
-                try {
-                  const token = await getToken();
-                  await apiFetch(`/jobs/delete/${id}`, {
-                    method: "DELETE",
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
-                  });
+    try {
+      await api(`/jobs/delete/${id}`, {
+        method: "DELETE",
+      });
 
-                  setMessage("✅ Projekt został usunięty pomyślnie!");
-                  setTimeout(() => window.history.back(), 1000);
-                } catch (err: any) {
-                  console.error("💥 Błąd podczas usuwania projektu:", err);
-                  setMessage(`❌ Błąd: ${err.message || "Nie udało się usunąć projektu."}`);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              Usuń projekt
-            </button>
+      setMessage("✅ Projekt został usunięty pomyślnie!");
+      setTimeout(() => window.history.back(), 1000);
+    } catch (err: any) {
+      console.error(err);
+      setMessage(`❌ Błąd: ${err.message || "Nie udało się usunąć projektu."}`);
+    } finally {
+      setLoading(false);
+    }
+  }}
+>
+  Usuń projekt
+</button>
           </div>
           {message && <p className="form-message">{message}</p>}
         </form>

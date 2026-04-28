@@ -6,6 +6,7 @@ from app.models.logs import Log as LogModel
 from app.models.jobs import Job as JobModel
 from datetime import datetime
 
+
 stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
 
 @stats_bp.route("/dashboard", methods=["GET"])
@@ -72,6 +73,7 @@ def get_gantt_stats():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
 
+        # ZAMIENIONO crud.Job NA JobModel
         logs = db.session.query(LogModel).join(JobModel).filter(
             JobModel.id_user == user_id,
             LogModel.stop.isnot(None)
