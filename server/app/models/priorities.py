@@ -1,6 +1,5 @@
 from sqlalchemy.orm import relationship
-from app import db
-
+from app.database.db import db
 class Priority(db.Model):
     __tablename__ = "priorities"
 

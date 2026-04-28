@@ -1,5 +1,5 @@
 from sqlalchemy.orm import relationship
-from app.extensions import db
+from app.database.db import db
 
 class Client(db.Model):
     __tablename__ = "clients"

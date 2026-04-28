@@ -1,5 +1,5 @@
 from sqlalchemy.orm import relationship
-from app import db
+from app.database.db import db
 
 class Log(db.Model):
     __tablename__ = "logs"
