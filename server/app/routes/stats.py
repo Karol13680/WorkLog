@@ -1,11 +1,10 @@
 from flask import Blueprint, jsonify
 from app.database import crud
 from app.core.security import get_current_user_id
-from app.extensions import db
+from app.database.db import db
 from app.models.logs import Log as LogModel
 from app.models.jobs import Job as JobModel
 from datetime import datetime
-
 
 stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
 
@@ -40,7 +39,7 @@ def get_dashboard_stats():
         total_profit = 0
         total_duration_seconds = 0
 
-        all_user_logs = LogModel.query.filter(
+        all_user_logs = db.session.query(LogModel).filter(
             LogModel.id_job.in_(job_ids),
             LogModel.stop.isnot(None)
         ).all()
@@ -65,33 +64,6 @@ def get_dashboard_stats():
     except Exception as e:
         print(f"[Błąd dashboard]: {e}")
         return jsonify({"message": "Błąd serwera."}), 500
-
-@stats_bp.route("/gantt", methods=["GET"])
-def get_gantt_stats():
-    try:
-        user_id = get_current_user_id()
-        if not user_id:
-            return jsonify({"message": "Brak autoryzacji"}), 401
-
-        # ZAMIENIONO crud.Job NA JobModel
-        logs = db.session.query(LogModel).join(JobModel).filter(
-            JobModel.id_user == user_id,
-            LogModel.stop.isnot(None)
-        ).all()
-
-        tasks_list = []
-        for l in logs:
-            job = crud.get_job_by_id(l.id_job)
-            tasks_list.append({
-                "name": job.short_desc if job else "Zadanie",
-                "start": l.start.isoformat(),
-                "end": l.stop.isoformat()
-            })
-
-        return jsonify({"tasks": tasks_list}), 200
-    except Exception as e:
-        print(f"[Błąd gantt]: {e}")
-        return jsonify({"message": "Błąd serwera"}), 500
 
 @stats_bp.route("/detailed-report", methods=["GET"])
 def get_detailed_report():

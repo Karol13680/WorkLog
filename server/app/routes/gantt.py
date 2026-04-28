@@ -2,16 +2,14 @@ from flask import Blueprint, jsonify, request, current_app, render_template
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
 import os
-from app import db
+from app.database.db import db
 from app.database import crud
 from app.core.security import get_current_user_id
 
-# Importujemy modele bezpośrednio, żeby uniknąć błędów z modułu crud
 from app.models.status import Status as StatusModel
 from app.models.logs import Log as LogModel
 from app.models.jobs import Job as JobModel 
 
-# --- STATUSES ---
 statuses_bp = Blueprint("statuses_all", __name__, url_prefix="/status")
 
 @statuses_bp.route("/all", methods=["GET"])
@@ -24,7 +22,6 @@ def get_all_statuses():
         print(f"[Błąd get_all_statuses]: {e}")
         return jsonify({"message": "Błąd pobierania statusów."}), 500
 
-# --- GANTT ---
 gantt_bp = Blueprint("gantt", __name__, url_prefix="/stats")
 
 @gantt_bp.route("/gantt", methods=["GET"])
@@ -41,7 +38,7 @@ def get_gantt_data():
 
         job_ids = [job.id for job in user_jobs]
 
-        all_user_logs = LogModel.query.filter(
+        all_user_logs = db.session.query(LogModel).filter(
             LogModel.id_job.in_(job_ids),
             LogModel.stop.isnot(None)
         ).all()
@@ -63,7 +60,6 @@ def get_gantt_data():
         print(f"[Błąd gantt]: {e}")
         return jsonify({"message": "Błąd serwera."}), 500
 
-# --- CLIENTS ---
 client_bp = Blueprint("clients", __name__, url_prefix="/clients")
 
 @client_bp.route("/add", methods=["POST"])
@@ -100,7 +96,6 @@ def add_client():
             address=address
         )
 
-        # Ważne: przekazujemy id_user (zgodnie z Twoim crud.py)
         client = crud.create_client(
             name=name,
             description=description,
@@ -114,7 +109,7 @@ def add_client():
             "client": {
                 "id": client.id,
                 "name": client.name,
-                "id_user": getattr(client, "id_user", user_id) # Zmienione z user_id na id_user
+                "id_user": getattr(client, "id_user", user_id)
             }
         }), 201
     except Exception as e:
