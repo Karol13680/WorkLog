@@ -1,11 +1,11 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-
 interface FetchOptions extends RequestInit {
   body?: any;
 }
 
-export const apiFetch = async (endpoint: string, options: FetchOptions = {}) => {
+// Dodajemy trzeci parametr: token
+export const apiFetch = async (endpoint: string, options: FetchOptions = {}, token?: string | null) => {
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const url = `${API_BASE_URL}${cleanEndpoint}`;
   
@@ -13,13 +13,11 @@ export const apiFetch = async (endpoint: string, options: FetchOptions = {}) => 
     ...(options.headers as Record<string, string> || {})
   };
 
-  // POBIERANIE TOKENA Z LOCAL STORAGE
-  const token = localStorage.getItem("access_token");
+  // UŻYWAMY TOKENA PRZEKAZANEGO Z CLERKA
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // Obsługa FormData (dla plików/logo) vs JSON
   const isFormData = options.body instanceof FormData;
   if (!isFormData && options.body) {
     headers["Content-Type"] = "application/json";
@@ -35,6 +33,7 @@ export const apiFetch = async (endpoint: string, options: FetchOptions = {}) => 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    // 401 zazwyczaj oznacza wygasły token lub brak autoryzacji
     throw new Error(data.message || `Błąd: ${response.status}`);
   }
 
