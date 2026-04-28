@@ -1,4 +1,4 @@
-from app.extensions import db
+from app.database.db import db
 from datetime import datetime
 
 def get_user_by_email(email: str):
