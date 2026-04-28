@@ -11,15 +11,18 @@ def get_current_user_id():
     token = auth_header.split(" ")[1]
     
     try:
-        # Pobieramy URL. Jeśli go nie ma, używamy pustego stringa, żeby uniknąć błędu 'None'
         jwks_url = os.getenv("CLERK_JWKS_URL", "")
         
         if not jwks_url:
-            print("[Security Error]: Brak CLERK_JWKS_URL w zmiennych środowiskowych!")
+            print("[Security Error]: Brak CLERK_JWKS_URL!")
             return None
 
-        # Cache'owanie kluczy (opcjonalnie, ale przyspiesza działanie)
-        jwks_client = PyJWKClient(jwks_url)
+        # TUTAJ POPRAWKA: Dodajemy nagłówek User-Agent, żeby Clerk nas nie odrzucał
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        
+        jwks_client = PyJWKClient(jwks_url, headers=headers)
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         payload = jwt.decode(
@@ -31,17 +34,15 @@ def get_current_user_id():
 
         clerk_id = payload.get("sub")
         
-        # Importy wewnątrz funkcji, żeby uniknąć cyklicznych zależności
         from app.database import crud
         user = crud.get_user_by_clerk_id(clerk_id)
         
         if not user:
-            # Tworzymy użytkownika, jeśli go nie ma w naszej bazie
             email = payload.get("email") or f"{clerk_id}@clerk.user"
             crud.create_user(id=clerk_id, email=email, name="User", surname="Clerk")
         
         return clerk_id
 
     except Exception as e:
-        print(f"[Security Error]: {e}")
+        print(f"[Security Error]: Fail to fetch data from the url, err: {e}")
         return None
