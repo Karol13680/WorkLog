@@ -3,6 +3,7 @@ from app.database import crud
 from app.core.security import get_current_user_id
 from app.extensions import db
 from app.models.logs import Log as LogModel
+from app.models.jobs import Job as JobModel
 from datetime import datetime
 
 stats_bp = Blueprint("stats", __name__, url_prefix="/stats")
@@ -71,9 +72,8 @@ def get_gantt_stats():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
 
-        # Pobieramy logi użytkownika połączone z nazwami zadań
-        logs = db.session.query(LogModel).join(crud.Job).filter(
-            crud.Job.id_user == user_id,
+        logs = db.session.query(LogModel).join(JobModel).filter(
+            JobModel.id_user == user_id,
             LogModel.stop.isnot(None)
         ).all()
 
