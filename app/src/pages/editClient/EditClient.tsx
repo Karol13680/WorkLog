@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from "../../api/apiClient";
+import { useApi } from "../../api/useApi"; 
 
 import Header from "../../components/header/Header";
 import ContentContainer from "../../components/contentContainer/ContentContainer";
@@ -22,7 +21,7 @@ interface EditClientData {
 
 const EditClient: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { getToken } = useAuth();
+  const { api } = useApi(); /
   
   const [formData, setFormData] = useState<EditClientData>({
     name: "",
@@ -42,12 +41,8 @@ const EditClient: React.FC = () => {
     const fetchClient = async () => {
       try {
         setLoading(true);
-        const token = await getToken();
-        if (!token) return;
-
-        const data = await apiFetch(`/clients/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Automat sam pobierze token i doda go do nagłówka
+        const data = await api(`/clients/${id}`);
 
         setFormData({
           name: data.client?.name || "",
@@ -67,7 +62,7 @@ const EditClient: React.FC = () => {
     };
 
     fetchClient();
-  }, [id, getToken]);
+  }, [id]); // Usunięto getToken z zależności
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -100,12 +95,10 @@ const EditClient: React.FC = () => {
       data.append("address", formData.address);
       if (logoFile) data.append("logo", logoFile);
 
-      const token = await getToken();
-      
-      await apiFetch(`/clients/update/${id}`, {
+      // Wywołanie przez api - obsłuży token i metodę PUT
+      await api(`/clients/update/${id}`, {
         method: "PUT",
         body: data,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       setMessage("✅ Klient został zaktualizowany pomyślnie!");

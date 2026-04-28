@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BsPlus } from 'react-icons/bs';
 import { useAuth } from "@clerk/clerk-react";
 import { apiFetch } from '../../api/apiClient';
+import { useApi } from '../../api/useApi';
 
 import Header from '../../components/header/Header';
 import ContentContainer from '../../components/contentContainer/ContentContainer';
@@ -10,6 +11,8 @@ import FormSection from '../../components/form/section/FormSection';
 import FormField from '../../components/form/section/FormField';
 
 import './AddTask.scss';
+
+
 
 type ActiveTab = 'projects' | 'clients';
 
@@ -40,7 +43,7 @@ const statuses: OptionType[] = [
 ];
 
 const ProjectForm: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi();
   const [formData, setFormData] = useState({
     task: '',
     projectType: '',
@@ -67,13 +70,7 @@ const ProjectForm: React.FC = () => {
     const fetchClients = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        const data = await apiFetch("/clients/all-user", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
+        const data = await api("/clients/all-user");
         setClients(data.map((c: any) => ({ value: c.id.toString(), label: c.name })));
       } catch (err) {
         console.error("Błąd połączenia z API:", err);
@@ -83,7 +80,7 @@ const ProjectForm: React.FC = () => {
     };
 
     fetchClients();
-  }, [getToken]);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -109,12 +106,9 @@ const ProjectForm: React.FC = () => {
       data.append('id_status', formData.status);
       data.append('id_client', formData.client);
 
-      const token = await getToken();
-      
-      await apiFetch('/jobs/add', {
+      await api('/jobs/add', {
         method: 'POST',
         body: data,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       setMessage('✅ Projekt został dodany pomyślnie!');
@@ -300,7 +294,7 @@ const ProjectForm: React.FC = () => {
 };
 
 const ClientForm: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Używamy Twojego automatu
   const [formData, setFormData] = useState({
     clientName: '',
     clientDescription: '',
@@ -340,12 +334,10 @@ const ClientForm: React.FC = () => {
       data.append('address', '');
       if (formData.logo) data.append('logo', formData.logo);
 
-      const token = await getToken();
-      
-      await apiFetch('/clients/add', {
+      // Wywołujemy api - token zostanie dodany automatycznie wewnątrz hooka
+      await api('/clients/add', {
         method: 'POST',
         body: data,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       setMessage('✅ Klient został dodany pomyślnie!');

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../../../api/apiClient'; 
+import { useApi } from '../../../../api/useApi'; // Import Twojego hooka
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,7 +24,7 @@ interface Project {
 }
 
 const TasksChart: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,13 +32,8 @@ const TasksChart: React.FC = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        // Używamy apiFetch zamiast surowego fetch
-        const data: Project[] = await apiFetch('/jobs/all-user', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // Automat api sam pobierze token i doda go do nagłówka Authorization
+        const data: Project[] = await api('/jobs/all-user');
 
         // Filtrujemy projekty o statusie "Zakończone"
         const completed = data.filter(
@@ -55,7 +49,7 @@ const TasksChart: React.FC = () => {
     };
 
     fetchProjects();
-  }, [getToken]);
+  }, []); // Usunięto getToken z zależności
 
   const projectStats = projects.reduce<Record<string, number>>((acc, project) => {
     const key = project.title || 'Inne';

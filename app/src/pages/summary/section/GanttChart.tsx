@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Bar } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../../api/apiClient';
+import { useApi } from '../../../api/useApi'; // Import Twojego hooka
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
@@ -94,7 +93,7 @@ const GanttChartDay: React.FC<GanttChartDayProps> = ({ date, tasks }) => {
 };
 
 const GanttChart: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   const [tasksByDate, setTasksByDate] = useState<Record<string, Task[]>>({});
   const [loading, setLoading] = useState(true);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -103,12 +102,8 @@ const GanttChart: React.FC = () => {
     const fetchGanttData = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        const response = await apiFetch('/stats/gantt', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // Automat api sam zadba o token i uderzy pod właściwy adres
+        const response = await api('/stats/gantt');
 
         const tasks: Task[] = response.tasks || [];
         const grouped: Record<string, Task[]> = {};
@@ -132,34 +127,31 @@ const GanttChart: React.FC = () => {
     };
 
     fetchGanttData();
-  }, [getToken]);
+  }, []); // Usunięto getToken z zależności
 
   const generatePDF = async () => {
     if (!chartRef.current) return;
 
     try {
-      const token = await getToken();
-      const reportData = await apiFetch('/stats/detailed-report', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Pobieranie raportu przez automat api
+      const reportData = await api('/stats/detailed-report');
 
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       pdf.setFontSize(22);
       pdf.setTextColor(44, 62, 80);
-      pdf.text('RAPORT PRACY I ZAROBKOW', 14, 20); // Bez "Ó" dla bezpieczeństwa
+      pdf.text('RAPORT PRACY I ZAROBKOW', 14, 20); 
       
       pdf.setFontSize(10);
       pdf.setTextColor(127, 140, 141);
       pdf.text(`Wygenerowano: ${new Date().toLocaleDateString('pl-PL')} ${new Date().toLocaleTimeString('pl-PL')}`, 14, 28);
 
-      // Mapowanie danych i usuwanie problematycznych znaków "ł" z wartości pieniężnych
       const tableRows = reportData.projects.map((p: any) => [
         p.project_name,
         p.client_name,
         p.formatted_time,
-        p.rate.replace('ł', 'l'), // Zamiana zł na zl
-        p.profit_str.replace('ł', 'l') // Zamiana zł na zl
+        p.rate.replace('ł', 'l'), 
+        p.profit_str.replace('ł', 'l') 
       ]);
 
       autoTable(pdf, {
@@ -182,11 +174,9 @@ const GanttChart: React.FC = () => {
       pdf.setTextColor(0, 0, 0);
       pdf.setFont("helvetica", "bold");
       
-      // Napisy bez polskich znaków specjalnych, aby uniknąć błędów renderowania
       pdf.text(`SUMA CZASU: ${reportData.summary.total_time}`, 14, finalY);
       pdf.text(`SUMA ZYSKU: ${reportData.summary.total_profit.replace('ł', 'l')}`, 14, finalY + 8);
 
-      // Druga strona z wykresem
       pdf.addPage();
       pdf.setFontSize(16);
       pdf.text('Wizualizacja czasu pracy (Gantt)', 14, 15);

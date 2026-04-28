@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../../api/apiClient';
+import { useApi } from '../../../api/useApi'; // Import Twojego automatu
 import './RecentActivities.scss';
 
 interface BackendLog {
@@ -27,7 +26,7 @@ interface Activity {
 }
 
 const RecentActivities: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,18 +46,13 @@ const RecentActivities: React.FC = () => {
     const fetchActivities = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        const headers = { "Authorization": `Bearer ${token}` };
-
-        // Pobieramy logi i projekty równolegle
+        // Pobieramy logi i projekty równolegle przez automat api
         const [logsRes, projectsData]: [any, Project[]] = await Promise.all([
-          apiFetch("/logs/all", { headers }),
-          apiFetch("/jobs/all-user", { headers })
+          api("/logs/all"),
+          api("/jobs/all-user")
         ]);
 
-        // Tworzymy mapę projektów z kluczem jako NUMBER
+        // Reszta logiki przetwarzania danych pozostaje bez zmian
         const projectsMap = new Map<number, Project>(
           projectsData.map((p) => [Number(p.id), p])
         );
@@ -97,7 +91,7 @@ const RecentActivities: React.FC = () => {
     };
 
     fetchActivities();
-  }, [getToken]);
+  }, []); // Usunięto getToken z zależności
 
   return (
     <div className="widget recent-activities">

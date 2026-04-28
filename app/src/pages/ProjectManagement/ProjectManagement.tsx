@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsPlus } from "react-icons/bs";
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from "../../api/apiClient";
+import { useApi } from "../../api/useApi"; // Import automatu
 
 import Header from "../../components/header/Header";
 import ContentContainer from "../../components/contentContainer/ContentContainer";
@@ -36,7 +35,7 @@ interface Client {
 }
 
 const ProjectManagement: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   const [activeTab, setActiveTab] = useState<ActiveTab>("projects");
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -59,18 +58,12 @@ const ProjectManagement: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        if (!token) return;
-
         if (isProjects) {
-          const data = await apiFetch("/jobs/all-user", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          // api() samo doda token Authorization
+          const data = await api("/jobs/all-user");
           setProjects(data);
         } else {
-          const data = await apiFetch("/clients/all-user", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const data = await api("/clients/all-user");
           
           const formattedClients = data.map((c: any) => ({
             id: c.id,
@@ -90,7 +83,7 @@ const ProjectManagement: React.FC = () => {
     };
 
     fetchData();
-  }, [isProjects, getToken]);
+  }, [isProjects]); // Usunięto getToken z tablicy zależności
 
   const filteredProjects = projects.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());

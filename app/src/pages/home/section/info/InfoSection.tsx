@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../../../api/apiClient'; 
+import { useApi } from '../../../../api/useApi'; // Import Twojego hooka
 import { FaBriefcase, FaClock, FaCheckCircle, FaDollarSign } from 'react-icons/fa';
 import InfoTile from "../../../../components/tiles/infoTile/InfoTile";
 import TasksChart from "./TasksChart";
@@ -9,7 +8,7 @@ import './InfoSection.scss';
 interface StatItem {
   title: string;
   value: string | number;
-  percentageChange?: number | null; // Opcjonalne, jeśli backend jeszcze tego nie wysyła
+  percentageChange?: number | null;
 }
 
 interface DashboardStats {
@@ -20,20 +19,16 @@ interface DashboardStats {
 }
 
 const InfoSection: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        const data = await apiFetch('/stats/dashboard', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
+        setLoading(true);
+        // Automat sam ogarnie token od Clerka i uderzy pod właściwy adres
+        const data = await api('/stats/dashboard');
         setStats(data);
       } catch (err) {
         console.error("Błąd pobierania statystyk:", err);
@@ -43,7 +38,7 @@ const InfoSection: React.FC = () => {
     };
 
     fetchStats();
-  }, [getToken]);
+  }, []); // Czysta tablica zależności
 
   if (loading || !stats) {
     return <div className="info-section__loading">Ładowanie statystyk...</div>;

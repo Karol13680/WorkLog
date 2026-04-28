@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlay, FaStop } from 'react-icons/fa';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../../api/apiClient';
+import { useApi } from '../../../api/useApi';
 import './TimeTracking.scss';
 
 interface TimeTrackingProps {
@@ -10,7 +9,7 @@ interface TimeTrackingProps {
 }
 
 const TimeTracking: React.FC<TimeTrackingProps> = ({ selectedProjectId, onStop }) => {
-  const { getToken } = useAuth();
+  const { api } = useApi();
   const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [currentLogId, setCurrentLogId] = useState<number | null>(null);
@@ -25,10 +24,8 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ selectedProjectId, onStop }
 
   const handleStart = async () => {
     try {
-      const token = await getToken();
-      const data = await apiFetch("/logs/start", {
+      const data = await api("/logs/start", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: { id_job: selectedProjectId }
       });
       setCurrentLogId(data.log.id);
@@ -41,10 +38,8 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ selectedProjectId, onStop }
 
   const handleStop = async () => {
     try {
-      const token = await getToken();
-      await apiFetch(`/logs/stop/${currentLogId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
+      await api(`/logs/stop/${currentLogId}`, {
+        method: "PUT"
       });
       setIsActive(false);
       setCurrentLogId(null);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../api/apiClient';
+import { useApi } from '../../api/useApi'; // Import Twojego hooka
 
 import Header from '../../components/header/Header';
 import InfoTile from '../../components/tiles/infoTile/InfoTile';
@@ -30,7 +29,7 @@ interface Stats {
 }
 
 const Stoper: React.FC = () => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   
   const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -44,22 +43,20 @@ const Stoper: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = await getToken();
-        if (!token) return;
-
+        // api() samo zadba o token dla obu zapytań w Promise.all
         const [projectsData, statsData] = await Promise.all([
-          apiFetch("/jobs/all-user", { headers: { Authorization: `Bearer ${token}` } }),
-          apiFetch("/stats/dashboard", { headers: { Authorization: `Bearer ${token}` } })
+          api("/jobs/all-user"),
+          api("/stats/dashboard")
         ]);
 
         setProjects(projectsData || []);
         setStats(statsData);
       } catch (error) {
-        console.error(error);
+        console.error("Błąd pobierania danych w stoperze:", error);
       }
     };
     fetchData();
-  }, [getToken, refreshKey]);
+  }, [refreshKey]); // Usunięto getToken z zależności
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

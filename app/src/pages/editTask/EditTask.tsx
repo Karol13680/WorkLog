@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import { apiFetch } from "../../api/apiClient";
+import { useApi } from "../../api/useApi";
 
 import Header from "../../components/header/Header";
 import ContentContainer from "../../components/contentContainer/ContentContainer";
@@ -38,7 +39,7 @@ const statuses: OptionType[] = [
 
 const EditTask: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
 
   const [formData, setFormData] = useState({
     task: "",
@@ -60,12 +61,8 @@ const EditTask: React.FC = () => {
     const fetchJob = async () => {
         try {
             setLoading(true);
-            const token = await getToken();
-            if (!token) return;
-
-            const data = await apiFetch(`/jobs/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            // Automat sam pobiera token i dodaje Authorization
+            const data = await api(`/jobs/${id}`);
 
             const job = data.job || {};
             const links = data.links || [];
@@ -98,7 +95,7 @@ const EditTask: React.FC = () => {
     };
 
     fetchJob();
-  }, [id, getToken]);
+  }, [id]); // Usunięto getToken z zależności
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -126,12 +123,10 @@ const EditTask: React.FC = () => {
       data.append("id_status", formData.status);
       data.append("project_type", formData.projectType);
 
-      const token = await getToken();
-      
-      await apiFetch(`/jobs/update/${id}`, {
+      // Metoda PUT przez automat api
+      await api(`/jobs/update/${id}`, {
         method: "PUT",
         body: data,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       setMessage("✅ Projekt został zaktualizowany pomyślnie!");

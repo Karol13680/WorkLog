@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from "@clerk/clerk-react";
-import { apiFetch } from '../../../api/apiClient';
+import { useApi } from '../../../api/useApi'; // Import Twojego hooka
 import './ManualEntry.scss';
 
 interface Project {
@@ -14,7 +13,7 @@ interface ManualEntryProps {
 }
 
 const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
-  const { getToken } = useAuth();
+  const { api } = useApi(); // Inicjalizacja automatu
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
@@ -26,12 +25,8 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        const data = await apiFetch("/jobs/all-user", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // Automat sam ogarnie token
+        const data = await api("/jobs/all-user");
         setProjects(data);
       } catch (err: any) {
         setError(err.message);
@@ -40,7 +35,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
       }
     };
     fetchProjects();
-  }, [getToken]);
+  }, []); // Czysta tablica zależności
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,10 +47,9 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
     }
 
     try {
-      const token = await getToken();
-      await apiFetch("/logs/manual", {
+      // Wysyłamy POST przez automat api - token doda się sam
+      await api("/logs/manual", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: {
           id_job: parseInt(selectedProjectId),
           start: startTime,
