@@ -34,14 +34,13 @@ def get_gantt_data():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji."}), 401
 
-        user_jobs = crud.get_jobs_by_user_id(user_id)
+        user_jobs = JobModel.query.filter_by(id_user=user_id).all()
         
         if not user_jobs:
             return jsonify({"tasks": []}), 200
 
         job_ids = [job.id for job in user_jobs]
 
-        # Pobieramy logi dla zadań użytkownika
         all_user_logs = LogModel.query.filter(
             LogModel.id_job.in_(job_ids),
             LogModel.stop.isnot(None)
@@ -49,7 +48,6 @@ def get_gantt_data():
 
         tasks = []
         for log in all_user_logs:
-            # Szukamy zadania w pobranej wcześniej liście user_jobs
             job = next((j for j in user_jobs if j.id == log.id_job), None)
             if not job:
                 continue
