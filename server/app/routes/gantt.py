@@ -83,6 +83,11 @@ def get_gantt_data():
             return jsonify({"message": "Brak autoryzacji."}), 401
 
         user_jobs = crud.get_jobs_by_user_id(user_id)
+        
+        # DODAJ TO ZABEZPIECZENIE:
+        if not user_jobs:
+            return jsonify({"tasks": []}), 200 # Zwróć pustą listę zamiast błędu
+
         job_ids = [job.id for job in user_jobs]
 
         all_user_logs = LogModel.query.filter(
@@ -96,10 +101,11 @@ def get_gantt_data():
             if not job:
                 continue
 
+            # Upewnij się, że start/stop to obiekty datetime
             tasks.append({
                 "name": getattr(job, "short_desc", "Bez nazwy"),
-                "start": log.start.isoformat(),
-                "end": log.stop.isoformat()
+                "start": log.start.isoformat() if hasattr(log.start, 'isoformat') else str(log.start),
+                "end": log.stop.isoformat() if hasattr(log.stop, 'isoformat') else str(log.stop)
             })
 
         return jsonify({"tasks": tasks}), 200
