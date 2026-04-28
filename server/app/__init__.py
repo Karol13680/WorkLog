@@ -45,9 +45,7 @@ def create_app():
 
     @app.errorhandler(404)
     def not_found(e):
-        if not e.description or 'api' not in e.description:
-             return send_from_directory(app.static_folder, 'index.html')
-        return e
+        return send_from_directory(app.static_folder, 'index.html')
 
     with app.app_context():
         from app.models.users import User
