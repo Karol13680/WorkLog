@@ -57,7 +57,7 @@ def get_clients_by_user_id(user_id: str):
     return Client.query.filter_by(id_user=user_id).all()
 
 def create_job(value=None, short_desc=None, long_desc=None, date_start=None, date_stop=None,
-               proximity=None, id_priority=None, id_status=None, id_user=None, id_client=None):
+                proximity=None, id_priority=None, id_status=None, id_user=None, id_client=None):
     from app.models.jobs import Job
     job = Job(
         value=value, 
@@ -142,7 +142,7 @@ def create_log(id_job, start):
 
 def get_log_by_id(log_id):
     from app.models.logs import Log
-    return Log.query.get(log_id)
+    return db.session.get(Log, log_id)
 
 def get_logs_by_user(user_id):
     from app.models.logs import Log
@@ -156,19 +156,3 @@ def get_logs_by_job(id_job):
 def get_completed_logs_by_job(id_job):
     from app.models.logs import Log
     return Log.query.filter_by(id_job=id_job).filter(Log.stop.isnot(None)).all()
-
-def get_log_by_id(log_id):
-    from app.models.logs import Log
-    return Log.query.get(log_id)
-
-def delete_links_by_job(job_id):
-    from app.models.links import Link
-    Link.query.filter_by(id_job=job_id).delete()
-    db.session.commit()
-
-def create_link(id_job, id_link_type, url):
-    from app.models.links import Link
-    new_link = Link(id_job=id_job, id_link_type=id_link_type, url=url)
-    db.session.add(new_link)
-    db.session.commit()
-    return new_link
