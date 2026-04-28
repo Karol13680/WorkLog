@@ -21,7 +21,7 @@ interface EditClientData {
 
 const EditClient: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { api } = useApi(); /
+  const { api } = useApi(); 
   
   const [formData, setFormData] = useState<EditClientData>({
     name: "",
