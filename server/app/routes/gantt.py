@@ -148,7 +148,7 @@ def add_client():
             description=description,
             logo=logo_path,
             id_contact=contact.id,
-            user_id=user_id
+            id_user=user_id
         )
 
         return jsonify({
