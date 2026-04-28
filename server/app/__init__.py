@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_migrate import Migrate
-from app.extensions import db
+from app.database.db import db
 
 load_dotenv()
 
@@ -15,13 +15,18 @@ def create_app():
                 static_folder=static_dir,
                 static_url_path='')
     
+    uri = os.environ.get('DATABASE_URL')
+    if uri and uri.startswith("postgres://"):
+        uri = uri.replace("postgres://", "postgresql://", 1)
+
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY') or 'dev_key',
-        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL'),
+        SQLALCHEMY_DATABASE_URI=uri,
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
     db.init_app(app)
+    Migrate(app, db)
 
     CORS(
         app,
@@ -30,8 +35,6 @@ def create_app():
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"]
     )
-
-    Migrate(app, db)
 
     from .routes import register_routes
     register_routes(app)
@@ -42,7 +45,9 @@ def create_app():
 
     @app.errorhandler(404)
     def not_found(e):
-        return send_from_directory(app.static_folder, 'index.html')
+        if not e.description or 'api' not in e.description:
+             return send_from_directory(app.static_folder, 'index.html')
+        return e
 
     with app.app_context():
         from app.models.users import User
