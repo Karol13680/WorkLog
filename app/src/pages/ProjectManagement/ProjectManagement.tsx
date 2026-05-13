@@ -118,7 +118,7 @@ const ProjectManagement: React.FC = () => {
             </button>
           </>
         }
-        filters={
+        {/* filters={
           isProjects ? (
             <ProjectFilters
               searchTerm={searchTerm}
@@ -131,7 +131,7 @@ const ProjectManagement: React.FC = () => {
           ) : (
             <ClientFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
           )
-        }
+        } */}
       >
         <div className="projects-grid">
           {loading ? (
