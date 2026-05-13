@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BsPlus } from "react-icons/bs";
-import { useApi } from "../../api/useApi"; // Import automatu
+import { useApi } from "../../api/useApi";
 
 import Header from "../../components/header/Header";
 import ContentContainer from "../../components/contentContainer/ContentContainer";
-import ProjectFilters from "../../components/filter/projectFilters/ProjectFilters";
-import ClientFilters from "../../components/filter/clientFilters/ClientFilters";
 import ProjectTile from "../../components/tiles/projectTile/ProjectTile";
 import ClientTile from "../../components/tiles/clientTile/ClientTile";
 
@@ -35,15 +33,11 @@ interface Client {
 }
 
 const ProjectManagement: React.FC = () => {
-  const { api } = useApi(); // Inicjalizacja automatu
+  const { api } = useApi();
   const [activeTab, setActiveTab] = useState<ActiveTab>("projects");
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClient, setSelectedClient] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
 
   const isProjects = activeTab === "projects";
   const title = isProjects ? "Zarządzanie projektami" : "Zarządzanie klientami";
@@ -59,7 +53,6 @@ const ProjectManagement: React.FC = () => {
       setLoading(true);
       try {
         if (isProjects) {
-          // api() samo doda token Authorization
           const data = await api("/jobs/all-user");
           setProjects(data);
         } else {
@@ -83,18 +76,7 @@ const ProjectManagement: React.FC = () => {
     };
 
     fetchData();
-  }, [isProjects]); // Usunięto getToken z tablicy zależności
-
-  const filteredProjects = projects.filter((p) => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesClient = selectedClient ? p.client === selectedClient : true;
-    const matchesStatus = selectedStatus ? p.status === selectedStatus : true;
-    return matchesSearch && matchesClient && matchesStatus;
-  });
-
-  const filteredClients = clients.filter((c) =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [isProjects, api]);
 
   return (
     <>
@@ -118,27 +100,13 @@ const ProjectManagement: React.FC = () => {
             </button>
           </>
         }
-        {/* filters={
-          isProjects ? (
-            <ProjectFilters
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedClient={selectedClient}
-              setSelectedClient={setSelectedClient}
-              selectedStatus={selectedStatus}
-              setSelectedStatus={setSelectedStatus}
-            />
-          ) : (
-            <ClientFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          )
-        } */}
       >
         <div className="projects-grid">
           {loading ? (
             <p>Ładowanie...</p>
           ) : isProjects ? (
-            filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => (
+            projects.length > 0 ? (
+              projects.map((project) => (
                 <Link
                   key={project.id}
                   to={`/edit-task/${project.id}`}
@@ -149,10 +117,10 @@ const ProjectManagement: React.FC = () => {
                 </Link>
               ))
             ) : (
-              <p>Brak projektów spełniających kryteria.</p>
+              <p>Brak projektów.</p>
             )
-          ) : filteredClients.length > 0 ? (
-            filteredClients.map((client) => (
+          ) : clients.length > 0 ? (
+            clients.map((client) => (
               <Link
                 key={client.id}
                 to={`/edit-client/${client.id}`}
@@ -169,7 +137,7 @@ const ProjectManagement: React.FC = () => {
               </Link>
             ))
           ) : (
-            <p>Brak klientów spełniających kryteria.</p>
+            <p>Brak klientów.</p>
           )}
         </div>
       </ContentContainer>
