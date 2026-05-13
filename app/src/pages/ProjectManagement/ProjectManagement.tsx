@@ -54,11 +54,11 @@ const ProjectManagement: React.FC = () => {
       try {
         if (isProjects) {
           const data = await api("/jobs/all-user");
-          setProjects(data);
+          setProjects(data || []);
         } else {
           const data = await api("/clients/all-user");
           
-          const formattedClients = data.map((c: any) => ({
+          const formattedClients = (data || []).map((c: any) => ({
             id: c.id,
             name: c.name,
             description: c.description || "Brak opisu",
@@ -76,7 +76,7 @@ const ProjectManagement: React.FC = () => {
     };
 
     fetchData();
-  }, [isProjects, api]);
+  }, [isProjects]); 
 
   return (
     <>
