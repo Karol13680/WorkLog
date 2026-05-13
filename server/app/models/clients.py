@@ -10,7 +10,6 @@ class Client(db.Model):
     logo = db.Column(db.Text)
     
     id_contact = db.Column(db.Integer, db.ForeignKey("contacts.id"), unique=True)
-    # Ustawiamy id_user (zamiast user_id)
     id_user = db.Column(db.String(255), db.ForeignKey("users.id"), nullable=False)
 
     contact = relationship("Contact", back_populates="client")

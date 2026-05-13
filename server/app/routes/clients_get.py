@@ -15,7 +15,6 @@ def get_clients_for_user():
         
         result = []
         for c in clients:
-            # Pobieramy kontakt dla każdego klienta
             contact = crud.get_contact_by_id(c.id_contact)
             result.append({
                 "id": c.id,
@@ -44,7 +43,6 @@ def get_client_by_id(id):
         if not client:
             return jsonify({"message": "Klient o podanym ID nie istnieje."}), 404
             
-        # TUTAJ BYŁ BŁĄD: Zmień client.user_id na client.id_user
         if client.id_user != user_id:
             return jsonify({"message": "Brak dostępu do zasobu."}), 403
 

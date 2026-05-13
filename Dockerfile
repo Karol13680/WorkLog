@@ -8,7 +8,6 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY app/ .
 
-# DODAJ TE DWIE LINIE TUTAJ:
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 ARG VITE_CLERK_PUBLISHABLE_KEY

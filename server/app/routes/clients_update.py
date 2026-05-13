@@ -18,13 +18,11 @@ def update_client(id):
         if not client:
             return jsonify({"message": "Klient o podanym ID nie istnieje."}), 404
             
-        # ZMIANA: client.id_user zamiast client.user_id
         if client.id_user != user_id:
             return jsonify({"message": "Brak dostępu do zasobu."}), 403
 
         contact = crud.get_contact_by_id(client.id_contact)
 
-        # Pobieranie danych (obsługa zarówno JSON jak i FormData)
         data = request.form if request.form else request.get_json()
         
         name = data.get("name")

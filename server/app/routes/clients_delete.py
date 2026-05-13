@@ -17,7 +17,6 @@ def delete_client(id):
         if not client:
             return jsonify({"message": "Klient o podanym ID nie istnieje."}), 404
             
-        # ZMIANA: client.id_user zamiast client.user_id
         if client.id_user != user_id:
             return jsonify({"message": "Brak dostępu do zasobu."}), 403
 
