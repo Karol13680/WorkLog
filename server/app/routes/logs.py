@@ -3,6 +3,8 @@ from app import db
 from app.database import crud
 from datetime import datetime
 from app.core.security import get_current_user_id
+from app.models.logs import Log
+from app.models.jobs import Job
 
 logs_bp = Blueprint("logs", __name__, url_prefix="/logs")
 
@@ -112,7 +114,6 @@ def create_manual_log():
         if not job or job.id_user != user_id:
             return jsonify({"message": "Brak dostępu do projektu."}), 403
 
-        from datetime import datetime
         start_dt = datetime.fromisoformat(start_str.replace("Z", ""))
         stop_dt = datetime.fromisoformat(stop_str.replace("Z", ""))
 
@@ -134,10 +135,6 @@ def get_all_user_logs():
         user_id = get_current_user_id()
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
-
-        # Pobieramy wszystkie logi powiązane z zadaniami użytkownika
-        from app.models.logs import Log
-        from app.models.jobs import Job
         
         logs = db.session.query(Log).join(Job).filter(Job.id_user == user_id).all()
 
@@ -152,23 +149,68 @@ def get_all_user_logs():
     except Exception as e:
         print(f"[Błąd get_all_user_logs]: {e}")
         return jsonify({"message": "Błąd serwera."}), 500
-    
-@logs_bp.route("/all", methods=["GET"])
-def get_all_logs():
+
+@logs_bp.route("/<int:log_id>", methods=["DELETE"])
+def delete_log(log_id):
     try:
         user_id = get_current_user_id()
-        if not user_id: return jsonify({"message": "Brak autoryzacji"}), 401
+        if not user_id:
+            return jsonify({"message": "Brak autoryzacji"}), 401
 
-        logs = crud.get_logs_by_user(user_id)
-        
-        return jsonify({
-            "logs": [{
-                "id": l.id,
-                "id_job": l.id_job,
-                "start": l.start.isoformat(),
-                "stop": l.stop.isoformat() if l.stop else None
-            } for l in logs]
-        }), 200
+        log = crud.get_log_by_id(log_id)
+        if not log:
+            return jsonify({"message": "Log o podanym ID nie istnieje."}), 404
+
+        job = crud.get_job_by_id(log.id_job)
+        if not job or job.id_user != user_id:
+            return jsonify({"message": "Brak dostępu."}), 403
+
+        db.session.delete(log)
+        db.session.commit()
+
+        return jsonify({"message": "Log usunięty pomyślnie"}), 200
+
     except Exception as e:
-        print(f"[Błąd logs/all]: {e}")
-        return jsonify({"message": "Błąd serwera"}), 500
+        db.session.rollback()
+        print(f"[Błąd delete_log]: {e}")
+        return jsonify({"message": "Błąd serwera."}), 500
+
+@logs_bp.route("/<int:log_id>", methods=["PUT"])
+def update_log(log_id):
+    try:
+        user_id = get_current_user_id()
+        if not user_id:
+            return jsonify({"message": "Brak autoryzacji"}), 401
+
+        log = crud.get_log_by_id(log_id)
+        if not log:
+            return jsonify({"message": "Log o podanym ID nie istnieje."}), 404
+
+        job = crud.get_job_by_id(log.id_job)
+        if not job or job.id_user != user_id:
+            return jsonify({"message": "Brak dostępu."}), 403
+
+        data = request.get_json()
+        start_str = data.get("start")
+        stop_str = data.get("stop")
+
+        if start_str:
+            log.start = datetime.fromisoformat(start_str.replace("Z", ""))
+        if stop_str:
+            log.stop = datetime.fromisoformat(stop_str.replace("Z", ""))
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Log zaktualizowany pomyślnie",
+            "log": {
+                "id": log.id,
+                "start": log.start.isoformat(),
+                "stop": log.stop.isoformat() if log.stop else None
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Błąd update_log]: {e}")
+        return jsonify({"message": "Błąd serwera."}), 500
