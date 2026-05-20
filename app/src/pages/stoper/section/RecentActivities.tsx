@@ -123,13 +123,10 @@ const RecentActivities: React.FC = () => {
   try {
     await api(`/logs/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+      body: {
         start: new Date(editForm.start).toISOString(),
         stop: new Date(editForm.stop).toISOString()
-      })
+      }
     });
     setEditingId(null);
     fetchActivities();
