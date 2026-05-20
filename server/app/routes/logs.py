@@ -15,8 +15,8 @@ def start_log():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
 
-        data = request.get_json()
-        if not data or "id_job" not in data:
+        data = request.get_json(silent=True) or {}
+        if "id_job" not in data:
             return jsonify({"message": "Pole 'id_job' jest wymagane."}), 400
 
         id_job = data["id_job"]
@@ -41,8 +41,7 @@ def start_log():
 
     except Exception as e:
         db.session.rollback()
-        print(f"[Błąd start_log]: {e}")
-        return jsonify({"message": "Wystąpił błąd podczas rozpoczęcia logu."}), 500
+        return jsonify({"message": f"Wystąpił błąd podczas rozpoczęcia logu: {str(e)}"}), 500
 
 @logs_bp.route("/stop/<int:log_id>", methods=["PUT"])
 def stop_log(log_id):
@@ -69,8 +68,7 @@ def stop_log(log_id):
 
     except Exception as e:
         db.session.rollback()
-        print(f"[Błąd stop_log]: {e}")
-        return jsonify({"message": "Błąd serwera."}), 500
+        return jsonify({"message": f"Błąd serwera: {str(e)}"}), 500
 
 @logs_bp.route("/job/<int:id_job>", methods=["GET"])
 def get_logs_for_job(id_job):
@@ -92,8 +90,7 @@ def get_logs_for_job(id_job):
             } for l in logs]
         }), 200
     except Exception as e:
-        print(f"[Błąd get_logs]: {e}")
-        return jsonify({"message": "Błąd pobierania logów."}), 500
+        return jsonify({"message": f"Błąd pobierania logów: {str(e)}"}), 500
     
 @logs_bp.route("/manual", methods=["POST"])
 def create_manual_log():
@@ -102,7 +99,7 @@ def create_manual_log():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
 
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         id_job = data.get("id_job")
         start_str = data.get("start")
         stop_str = data.get("stop")
@@ -114,8 +111,8 @@ def create_manual_log():
         if not job or job.id_user != user_id:
             return jsonify({"message": "Brak dostępu do projektu."}), 403
 
-        start_dt = datetime.fromisoformat(start_str.replace("Z", ""))
-        stop_dt = datetime.fromisoformat(stop_str.replace("Z", ""))
+        start_dt = datetime.strptime(start_str[:19], "%Y-%m-%dT%H:%M:%S")
+        stop_dt = datetime.strptime(stop_str[:19], "%Y-%m-%dT%H:%M:%S")
 
         log = crud.create_manual_log(
             id_job=id_job,
@@ -126,8 +123,7 @@ def create_manual_log():
         return jsonify({"message": "Dodano wpis ręczny", "id": log.id}), 201
     except Exception as e:
         db.session.rollback()
-        print(f"[Błąd manual_log]: {e}")
-        return jsonify({"message": "Błąd serwera."}), 500
+        return jsonify({"message": f"Błąd serwera: {str(e)}"}), 500
     
 @logs_bp.route("/all", methods=["GET"])
 def get_all_user_logs():
@@ -147,8 +143,7 @@ def get_all_user_logs():
             } for l in logs]
         }), 200
     except Exception as e:
-        print(f"[Błąd get_all_user_logs]: {e}")
-        return jsonify({"message": "Błąd serwera."}), 500
+        return jsonify({"message": f"Błąd serwera: {str(e)}"}), 500
 
 @logs_bp.route("/<int:log_id>", methods=["DELETE"])
 def delete_log(log_id):
@@ -172,8 +167,7 @@ def delete_log(log_id):
 
     except Exception as e:
         db.session.rollback()
-        print(f"[Błąd delete_log]: {e}")
-        return jsonify({"message": "Błąd serwera."}), 500
+        return jsonify({"message": f"Błąd serwera: {str(e)}"}), 500
 
 @logs_bp.route("/<int:log_id>", methods=["PUT"])
 def update_log(log_id):
@@ -190,14 +184,14 @@ def update_log(log_id):
         if not job or job.id_user != user_id:
             return jsonify({"message": "Brak dostępu."}), 403
 
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         start_str = data.get("start")
         stop_str = data.get("stop")
 
         if start_str:
-            log.start = datetime.fromisoformat(start_str.replace("Z", ""))
+            log.start = datetime.strptime(start_str[:19], "%Y-%m-%dT%H:%M:%S")
         if stop_str:
-            log.stop = datetime.fromisoformat(stop_str.replace("Z", ""))
+            log.stop = datetime.strptime(stop_str[:19], "%Y-%m-%dT%H:%M:%S")
 
         db.session.commit()
 
@@ -212,5 +206,4 @@ def update_log(log_id):
 
     except Exception as e:
         db.session.rollback()
-        print(f"[Błąd update_log]: {e}")
-        return jsonify({"message": "Błąd serwera."}), 500
+        return jsonify({"message": f"Błąd serwera: {str(e)}"}), 500
