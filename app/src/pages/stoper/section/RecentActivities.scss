@@ -22,6 +22,9 @@
   }
 
   &__details {
+    flex: 1;
+    padding-right: 1.5rem;
+
     h4 {
       font-size: 1rem;
       font-weight: 600;
@@ -32,9 +35,30 @@
       color: #6c757d;
       margin: 0 0 0.5rem;
     }
-    span {
+    .activity-date {
       font-size: 0.8rem;
       color: #adb5bd;
+    }
+
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+
+      input {
+        padding: 0.4rem 0.6rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: #495057;
+        width: max-content;
+        
+        &:focus {
+          outline: none;
+          border-color: var(--main-blue, #8cb0eb);
+        }
+      }
     }
   }
 
@@ -42,17 +66,69 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    min-width: 120px;
     white-space: nowrap;
 
     .duration {
       font-size: 0.9rem;
-      color: var(--main-blue);
+      color: var(--main-blue, #8cb0eb);
       font-weight: 500;
+      margin-bottom: 0.1rem;
     }
     .amount {
       font-size: 1.1rem;
       color: #28a745;
       font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+
+      button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &.btn-save {
+          background-color: #d4edda;
+          color: #155724;
+          &:hover {
+            background-color: #c3e6cb;
+          }
+        }
+
+        &.btn-cancel {
+          background-color: #f1f3f5;
+          color: #495057;
+          &:hover {
+            background-color: #e9ecef;
+          }
+        }
+
+        &.btn-edit {
+          background-color: #f1f3f5;
+          color: #212529;
+          &:hover {
+            background-color: #e2e6ea;
+          }
+        }
+
+        &.btn-delete {
+          background-color: #f1f3f5;
+          color: #212529;
+          &:hover {
+            background-color: #ffe3e3;
+            color: #c92a2a;
+          }
+        }
+      }
     }
   }
 }
@@ -77,8 +153,8 @@
     &:focus {
       outline: none;
       background: #fff;
-      border-color: var(--main-blue); // Twoja zmienna koloru
-      box-shadow: 0 0 0 4px rgba(140, 176, 235, 0.2); // Miękka obwódka
+      border-color: var(--main-blue);
+      box-shadow: 0 0 0 4px rgba(140, 176, 235, 0.2);
     }
   }
 
@@ -97,9 +173,14 @@
     overflow-y: auto;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     
-    // Stylizacja scrollbara
-    &::-webkit-scrollbar { width: 6px; }
-    &::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 10px; }
+    &::-webkit-scrollbar { 
+      width: 6px; 
+    }
+    
+    &::-webkit-scrollbar-thumb { 
+      background: #d1d1d1; 
+      border-radius: 10px; 
+    }
   }
 
   &__dropdown-item {
@@ -112,9 +193,11 @@
     transition: background 0.2s;
 
     &:hover {
-      background: #f0f4ff; // Delikatny niebieski na hover
+      background: #f0f4ff;
       
-      .project-name { color: var(--main-blue); }
+      .project-name { 
+        color: var(--main-blue); 
+      }
     }
 
     .project-info {
@@ -136,7 +219,7 @@
     .project-rate {
       font-size: 0.8rem;
       font-weight: 500;
-      color: #27ae60; // Zielony dla stawki
+      color: #27ae60;
       background: #e6f7ee;
       padding: 4px 8px;
       border-radius: 4px;
