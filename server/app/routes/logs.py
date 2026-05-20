@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.database import crud
 from datetime import datetime
+import json
 from app.core.security import get_current_user_id
 from app.models.logs import Log
 from app.models.jobs import Job
@@ -15,7 +16,12 @@ def start_log():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
 
-        data = request.get_json(silent=True) or {}
+        data = request.get_json(silent=True)
+        if isinstance(data, str):
+            data = json.loads(data)
+        if not data:
+            data = {}
+
         if "id_job" not in data:
             return jsonify({"message": "Pole 'id_job' jest wymagane."}), 400
 
@@ -99,7 +105,12 @@ def create_manual_log():
         if not user_id:
             return jsonify({"message": "Brak autoryzacji"}), 401
 
-        data = request.get_json(silent=True) or {}
+        data = request.get_json(silent=True)
+        if isinstance(data, str):
+            data = json.loads(data)
+        if not data:
+            data = {}
+
         id_job = data.get("id_job")
         start_str = data.get("start")
         stop_str = data.get("stop")
@@ -184,7 +195,12 @@ def update_log(log_id):
         if not job or job.id_user != user_id:
             return jsonify({"message": "Brak dostępu."}), 403
 
-        data = request.get_json(silent=True) or {}
+        data = request.get_json(silent=True)
+        if isinstance(data, str):
+            data = json.loads(data)
+        if not data:
+            data = {}
+
         start_str = data.get("start")
         stop_str = data.get("stop")
 
