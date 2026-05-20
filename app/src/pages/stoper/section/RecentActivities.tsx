@@ -120,20 +120,23 @@ const RecentActivities: React.FC = () => {
   };
 
   const handleSave = async (id: number) => {
-    try {
-      await api(`/logs/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          start: new Date(editForm.start).toISOString(),
-          stop: new Date(editForm.stop).toISOString()
-        })
-      });
-      setEditingId(null);
-      fetchActivities();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  try {
+    await api(`/logs/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        start: new Date(editForm.start).toISOString(),
+        stop: new Date(editForm.stop).toISOString()
+      })
+    });
+    setEditingId(null);
+    fetchActivities();
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const handleCancel = () => {
     setEditingId(null);
