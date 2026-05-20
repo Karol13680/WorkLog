@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApi } from '../../../api/useApi';
 import './RecentActivities.scss';
 
@@ -52,7 +52,7 @@ const RecentActivities: React.FC = () => {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
-  const fetchActivities = useCallback(async () => {
+  const fetchActivities = async () => {
     setLoading(true);
     try {
       const [logsRes, projectsData]: [any, Project[]] = await Promise.all([
@@ -95,11 +95,11 @@ const RecentActivities: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  };
 
   useEffect(() => {
     fetchActivities();
-  }, [fetchActivities]);
+  }, []);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm('Czy na pewno chcesz usunąć tę aktywność?')) return;
