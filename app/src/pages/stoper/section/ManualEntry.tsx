@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useApi } from '../../../api/useApi'; // Import Twojego hooka
+import { useApi } from '../../../api/useApi';
 import './ManualEntry.scss';
 
 interface Project {
   id: number;
   title: string;
-  rate: string; 
+  rate: string;
 }
 
 interface ManualEntryProps {
@@ -13,7 +13,7 @@ interface ManualEntryProps {
 }
 
 const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
-  const { api } = useApi(); // Inicjalizacja automatu
+  const { api } = useApi();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
@@ -25,7 +25,6 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        // Automat sam ogarnie token
         const data = await api("/jobs/all-user");
         setProjects(data);
       } catch (err: any) {
@@ -35,7 +34,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
       }
     };
     fetchProjects();
-  }, []); // Czysta tablica zależności
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,19 +46,18 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
     }
 
     try {
-      // Wysyłamy POST przez automat api - token doda się sam
       await api("/logs/manual", {
         method: "POST",
         body: {
           id_job: parseInt(selectedProjectId),
-          start: startTime,
-          stop: stopTime
+          start: new Date(startTime).toISOString(),
+          stop: new Date(stopTime).toISOString()
         }
       });
 
       alert("Pomyślnie dodano wpis!");
-      handleCancel(); 
-      onAdded?.(); 
+      handleCancel();
+      onAdded?.();
     } catch (err: any) {
       setError(err.message);
     }
