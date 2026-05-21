@@ -55,7 +55,6 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onAdded }) => {
         }
       });
 
-      alert("Pomyślnie dodano wpis!");
       handleCancel();
       onAdded?.();
     } catch (err: any) {
